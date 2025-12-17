@@ -43,6 +43,9 @@ export default function Dashboard() {
     const [loginError, setLoginError] = useState('');
     const [showAdminMenu, setShowAdminMenu] = useState(false);
 
+    // Sorting State
+    const [sortConfig, setSortConfig] = useState({ key: 'score', direction: 'desc' });
+
     // Initial Fetch
     useEffect(() => {
         fetchStudents();
@@ -194,6 +197,46 @@ export default function Dashboard() {
         }, 500);
         return () => clearTimeout(timer);
     }, [search]);
+
+    // Sorting Logic
+    const sortedStudents = [...students].sort((a, b) => {
+        let aValue = 0;
+        let bValue = 0;
+
+        switch (sortConfig.key) {
+            case 'leetcode':
+                aValue = a.leetcodeStats?.totalSolved || 0;
+                bValue = b.leetcodeStats?.totalSolved || 0;
+                break;
+            case 'github':
+                aValue = a.githubStats?.totalCommits || 0;
+                bValue = b.githubStats?.totalCommits || 0;
+                break;
+            case 'score':
+                aValue = a.performanceScore || 0;
+                bValue = b.performanceScore || 0;
+                break;
+            default:
+                return 0;
+        }
+
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    const requestSort = (key) => {
+        let direction = 'desc';
+        if (sortConfig.key === key && sortConfig.direction === 'desc') {
+            direction = 'asc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const SortIcon = ({ columnKey }) => {
+        if (sortConfig.key !== columnKey) return <div className="w-4 h-4" />; // Placeholder
+        return <span className="ml-1 text-xs">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>;
+    };
 
     const exportToCSV = () => {
         const headers = ['USN', 'Name', 'Section', 'Batch', 'LeetCode Solved', 'GitHub Repos', 'Performance Score'];
@@ -477,7 +520,9 @@ export default function Dashboard() {
                                                 />
                                                 <Tooltip 
                                                     cursor={{ fill: 'transparent' }}
-                                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                    formatter={(value) => [value, 'Solved']}
+                                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
+                                                    labelStyle={{ color: '#666' }}
                                                 />
                                                 <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                                                     {kpiStats.topLeetCode.map((entry, index) => (
@@ -529,7 +574,7 @@ export default function Dashboard() {
                                 />
                                 <ChampionCard
                                     icon={Flame}
-                                    title="Longest"
+                                    title="Longest Streak"
                                     name={kpiStats.champions.gh.longest.name}
                                     value={kpiStats.champions.gh.longest.val}
                                     subLabel="days"
@@ -538,7 +583,7 @@ export default function Dashboard() {
                                 />
                                 <ChampionCard
                                     icon={Zap}
-                                    title="Current"
+                                    title="Current Streak"
                                     name={kpiStats.champions.gh.streak.name}
                                     value={kpiStats.champions.gh.streak.val}
                                     subLabel="days"
@@ -586,7 +631,9 @@ export default function Dashboard() {
                                                 />
                                                 <Tooltip 
                                                     cursor={{ fill: 'transparent' }}
-                                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                    formatter={(value) => [value, 'Contributions']}
+                                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
+                                                    labelStyle={{ color: '#666' }}
                                                 />
                                                 <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                                                     {kpiStats.topGitHub.map((entry, index) => (
@@ -650,14 +697,35 @@ export default function Dashboard() {
                                     <tr>
                                         <th className="text-left p-2 pl-3 md:p-4 md:pl-6 text-[10px] md:text-xs">Student Info</th>
                                         <th className="hidden md:table-cell text-center p-4">Cohort</th>
-                                        <th className="text-center p-2 md:p-4 text-[10px] md:text-xs">LeetCode</th>
-                                        <th className="text-center p-2 md:p-4 text-[10px] md:text-xs">GitHub</th>
-                                        <th className="text-center p-2 md:p-4 text-[10px] md:text-xs">Score</th>
+                                        <th 
+                                            className="text-center p-2 md:p-4 text-[10px] md:text-xs cursor-pointer hover:bg-slate-50 transition select-none group"
+                                            onClick={() => requestSort('leetcode')}
+                                        >
+                                            <div className="flex items-center justify-center gap-1">
+                                                LeetCode <SortIcon columnKey="leetcode" />
+                                            </div>
+                                        </th>
+                                        <th 
+                                            className="text-center p-2 md:p-4 text-[10px] md:text-xs cursor-pointer hover:bg-slate-50 transition select-none group"
+                                            onClick={() => requestSort('github')}
+                                        >
+                                            <div className="flex items-center justify-center gap-1">
+                                                GitHub <SortIcon columnKey="github" />
+                                            </div>
+                                        </th>
+                                        <th 
+                                            className="text-center p-2 md:p-4 text-[10px] md:text-xs cursor-pointer hover:bg-slate-50 transition select-none group"
+                                            onClick={() => requestSort('score')}
+                                        >
+                                            <div className="flex items-center justify-center gap-1">
+                                                Score <SortIcon columnKey="score" />
+                                            </div>
+                                        </th>
                                         <th className="text-center p-2 pr-3 md:p-4 md:pr-6 text-[10px] md:text-xs">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {students.map((student) => {
+                                    {sortedStudents.map((student) => {
                                         const isFirst = kpiStats.top3Ids[0] === student._id;
                                         const isSecond = kpiStats.top3Ids[1] === student._id;
                                         const isThird = kpiStats.top3Ids[2] === student._id;
