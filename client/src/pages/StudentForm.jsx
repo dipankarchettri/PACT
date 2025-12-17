@@ -75,7 +75,7 @@ export default function StudentForm() {
                                 PACT
                             </span>
                             <div className="flex flex-col leading-none">
-                                <span className="text-[10px] text-slate-500 font-medium tracking-wider uppercase">Performance Analytics</span>
+                                <span className="text-[10px] text-slate-500 font-medium tracking-wider uppercase">Performance Analytics & Code Tracker</span>
                                 <span className="text-[10px] text-slate-900 font-bold tracking-wider uppercase">Dept of AI&DS, SIET</span>
                             </div>
                         </div>

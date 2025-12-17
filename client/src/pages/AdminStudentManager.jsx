@@ -10,7 +10,8 @@ import {
     AlertCircle,
     Loader2,
     Trash2,
-    X
+    X,
+    Edit
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -35,6 +36,10 @@ export default function AdminStudentManager() {
     const [deleteConfirmationCode, setDeleteConfirmationCode] = useState('');
     const [deleteInput, setDeleteInput] = useState('');
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // Edit Modal State (Mobile)
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [editingStudent, setEditingStudent] = useState(null);
 
     // Password Protection
     const handleLogin = (e) => {
@@ -140,6 +145,27 @@ export default function AdminStudentManager() {
         }
     };
 
+    const handleEditClick = (student) => {
+        setEditingStudent({ ...student });
+        setEditModalOpen(true);
+    };
+
+    const handleEditSave = async () => {
+        if (!editingStudent) return;
+        
+        // Use the existing handleSave logic but wrapper for the modal
+        await handleSave(editingStudent);
+        setEditModalOpen(false);
+        setEditingStudent(null);
+    };
+
+    const handleEditInputChange = (field, value) => {
+        setEditingStudent(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
     const filteredStudents = students.filter(s =>
         s.name.toLowerCase().includes(search.toLowerCase()) ||
         s.usn.toLowerCase().includes(search.toLowerCase())
@@ -205,7 +231,7 @@ export default function AdminStudentManager() {
                                 PACT
                             </span>
                             <div className="flex flex-col leading-none">
-                                <span className="text-[10px] text-slate-500 font-medium tracking-wider uppercase">Performance Analytics</span>
+                                <span className="text-[10px] text-slate-500 font-medium tracking-wider uppercase">Performance Analytics & Code Tracker</span>
                                 <span className="text-[10px] text-slate-900 font-bold tracking-wider uppercase">Dept of AI&DS, SIET</span>
                             </div>
                         </div>
@@ -252,11 +278,11 @@ export default function AdminStudentManager() {
                                 <thead className="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
                                     <tr>
                                         <th className="p-4 text-left font-semibold text-slate-600 w-64">Student Info</th>
-                                        <th className="p-4 text-left font-semibold text-slate-600 w-24">Batch</th>
-                                        <th className="p-4 text-left font-semibold text-slate-600 w-24">Sec</th>
-                                        <th className="p-4 text-left font-semibold text-slate-600 w-48">GitHub Username</th>
-                                        <th className="p-4 text-left font-semibold text-slate-600 w-48">LeetCode Username</th>
-                                        <th className="p-4 text-left font-semibold text-slate-600 w-48">LinkedIn URL</th>
+                                        <th className="hidden md:table-cell p-4 text-left font-semibold text-slate-600 w-24">Batch</th>
+                                        <th className="hidden md:table-cell p-4 text-left font-semibold text-slate-600 w-24">Sec</th>
+                                        <th className="hidden md:table-cell p-4 text-left font-semibold text-slate-600 w-48">GitHub Username</th>
+                                        <th className="hidden md:table-cell p-4 text-left font-semibold text-slate-600 w-48">LeetCode Username</th>
+                                        <th className="hidden md:table-cell p-4 text-left font-semibold text-slate-600 w-48">LinkedIn URL</th>
                                         <th className="p-4 text-center font-semibold text-slate-600 w-40">Action</th>
                                     </tr>
                                 </thead>
@@ -264,18 +290,26 @@ export default function AdminStudentManager() {
                                     {filteredStudents.map((student) => (
                                         <tr key={student._id} className="hover:bg-slate-50/50 transition-colors group">
                                             <td className="p-4 align-top">
-                                                <Input
-                                                    value={student.name}
-                                                    onChange={(e) => handleInputChange(student._id, 'name', e.target.value)}
-                                                    className="font-bold border-slate-300 hover:border-slate-400 focus:border-violet-200 mb-1 h-8 px-2 -mx-2 bg-transparent"
-                                                />
-                                                <Input
-                                                    value={student.usn}
-                                                    onChange={(e) => handleInputChange(student._id, 'usn', e.target.value)}
-                                                    className="font-mono text-xs text-slate-500 border-slate-300 hover:border-slate-400 focus:border-violet-200 h-6 px-2 -mx-2 bg-transparent"
-                                                />
+                                                {/* Mobile: Static Text */}
+                                                <div className="md:hidden">
+                                                    <div className="font-bold text-slate-900">{student.name}</div>
+                                                    <div className="text-xs font-mono text-slate-500">{student.usn}</div>
+                                                </div>
+                                                {/* Desktop: Inputs */}
+                                                <div className="hidden md:block">
+                                                    <Input
+                                                        value={student.name}
+                                                        onChange={(e) => handleInputChange(student._id, 'name', e.target.value)}
+                                                        className="font-bold border-slate-300 hover:border-slate-400 focus:border-violet-200 mb-1 h-8 px-2 -mx-2 bg-transparent"
+                                                    />
+                                                    <Input
+                                                        value={student.usn}
+                                                        onChange={(e) => handleInputChange(student._id, 'usn', e.target.value)}
+                                                        className="font-mono text-xs text-slate-500 border-slate-300 hover:border-slate-400 focus:border-violet-200 h-6 px-2 -mx-2 bg-transparent"
+                                                    />
+                                                </div>
                                             </td>
-                                            <td className="p-4 align-top">
+                                            <td className="hidden md:table-cell p-4 align-top">
                                                 <Input
                                                     type="number"
                                                     value={student.batch}
@@ -283,7 +317,7 @@ export default function AdminStudentManager() {
                                                     className="border-slate-300 hover:border-slate-400 focus:border-violet-200 bg-transparent"
                                                 />
                                             </td>
-                                            <td className="p-4 align-top">
+                                            <td className="hidden md:table-cell p-4 align-top">
                                                 <Input
                                                     value={student.section}
                                                     onChange={(e) => handleInputChange(student._id, 'section', e.target.value)}
@@ -296,7 +330,7 @@ export default function AdminStudentManager() {
                                                     className="border-slate-300 hover:border-slate-400 focus:border-violet-200 bg-transparent h-8 px-2 -mx-2 text-xs"
                                                 />
                                             </td>
-                                            <td className="p-4 align-top">
+                                            <td className="hidden md:table-cell p-4 align-top">
                                                 <Input
                                                     value={student.githubUsername || ''}
                                                     onChange={(e) => handleInputChange(student._id, 'githubUsername', e.target.value)}
@@ -304,7 +338,7 @@ export default function AdminStudentManager() {
                                                     className="border-slate-300 hover:border-slate-400 focus:border-violet-200 bg-transparent text-slate-600"
                                                 />
                                             </td>
-                                            <td className="p-4 align-top">
+                                            <td className="hidden md:table-cell p-4 align-top">
                                                 <Input
                                                     value={student.leetcodeUsername || ''}
                                                     onChange={(e) => handleInputChange(student._id, 'leetcodeUsername', e.target.value)}
@@ -312,7 +346,7 @@ export default function AdminStudentManager() {
                                                     className="border-slate-300 hover:border-slate-400 focus:border-violet-200 bg-transparent text-slate-600"
                                                 />
                                             </td>
-                                            <td className="p-4 align-top">
+                                            <td className="hidden md:table-cell p-4 align-top">
                                                 <Input
                                                     value={student.linkedinUrl || ''}
                                                     onChange={(e) => handleInputChange(student._id, 'linkedinUrl', e.target.value)}
@@ -322,11 +356,12 @@ export default function AdminStudentManager() {
                                             </td>
                                             <td className="p-4 align-top text-center">
                                                 <div className="flex flex-col items-center gap-2">
+                                                    {/* Desktop: Save Button */}
                                                     <Button
                                                         size="sm"
                                                         onClick={() => handleSave(student)}
                                                         disabled={savingId === student._id}
-                                                        className={`w-full ${student.status === 'success' ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-900 hover:bg-slate-800'} text-white transition-all`}
+                                                        className={`hidden md:flex w-full ${student.status === 'success' ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-900 hover:bg-slate-800'} text-white transition-all`}
                                                     >
                                                         {savingId === student._id ? (
                                                             <Loader2 className="w-3 h-3 animate-spin mr-1" />
@@ -336,6 +371,15 @@ export default function AdminStudentManager() {
                                                             <Save className="w-3 h-3 mr-1" />
                                                         )}
                                                         {savingId === student._id ? 'Validating...' : student.status === 'success' ? 'Saved' : 'Save'}
+                                                    </Button>
+
+                                                    {/* Mobile: Edit Button */}
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() => handleEditClick(student)}
+                                                        className="md:hidden w-full bg-slate-900 text-white hover:bg-slate-800"
+                                                    >
+                                                        <Save className="w-3 h-3 mr-1" /> Edit
                                                     </Button>
 
                                                     {student.status === 'error' && (
@@ -361,6 +405,118 @@ export default function AdminStudentManager() {
                             </table>
                         )}
                     </div>
+
+                    {/* Edit Modal (Mobile Only) */}
+                    {editModalOpen && editingStudent && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm md:hidden">
+                            <motion.div
+                                initial={{ scale: 0.95, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className="bg-white rounded-xl shadow-2xl max-w-sm w-full overflow-hidden flex flex-col max-h-[90vh]"
+                            >
+                                <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 sticky top-0 z-10">
+                                    <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                                        <Edit className="w-4 h-4 text-violet-600" />
+                                        Edit Student
+                                    </h3>
+                                    <button onClick={() => setEditModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
+                                
+                                <div className="p-6 space-y-4 overflow-y-auto">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-semibold text-slate-500 uppercase">Student Info</label>
+                                        <Input
+                                            value={editingStudent.name}
+                                            onChange={(e) => handleEditInputChange('name', e.target.value)}
+                                            placeholder="Full Name"
+                                            className="font-bold"
+                                        />
+                                        <Input
+                                            value={editingStudent.usn}
+                                            onChange={(e) => handleEditInputChange('usn', e.target.value)}
+                                            placeholder="USN"
+                                            className="font-mono text-sm"
+                                        />
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-slate-500 uppercase">Batch</label>
+                                            <Input
+                                                type="number"
+                                                value={editingStudent.batch}
+                                                onChange={(e) => handleEditInputChange('batch', e.target.value)}
+                                                placeholder="Year"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-slate-500 uppercase">Section</label>
+                                            <Input
+                                                value={editingStudent.section}
+                                                onChange={(e) => handleEditInputChange('section', e.target.value)}
+                                                placeholder="Sec"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-semibold text-slate-500 uppercase">Phone</label>
+                                        <Input
+                                            value={editingStudent.phoneNumber || ''}
+                                            onChange={(e) => handleEditInputChange('phoneNumber', e.target.value)}
+                                            placeholder="Phone Number"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-3 pt-2">
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-slate-500 uppercase">GitHub</label>
+                                            <Input
+                                                value={editingStudent.githubUsername || ''}
+                                                onChange={(e) => handleEditInputChange('githubUsername', e.target.value)}
+                                                placeholder="GitHub Username"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-slate-500 uppercase">LeetCode</label>
+                                            <Input
+                                                value={editingStudent.leetcodeUsername || ''}
+                                                onChange={(e) => handleEditInputChange('leetcodeUsername', e.target.value)}
+                                                placeholder="LeetCode Username"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-slate-500 uppercase">LinkedIn</label>
+                                            <Input
+                                                value={editingStudent.linkedinUrl || ''}
+                                                onChange={(e) => handleEditInputChange('linkedinUrl', e.target.value)}
+                                                placeholder="LinkedIn URL"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-4 border-t border-slate-100 bg-slate-50 sticky bottom-0 z-10 flex gap-2">
+                                    <Button 
+                                        variant="ghost" 
+                                        onClick={() => setEditModalOpen(false)}
+                                        className="flex-1"
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button 
+                                        onClick={handleEditSave}
+                                        className="flex-1 bg-violet-600 hover:bg-violet-700 text-white"
+                                    >
+                                        <Save className="w-4 h-4 mr-2" />
+                                        Save Changes
+                                    </Button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
 
                     {/* Delete Confirmation Modal */}
                     {deleteModalOpen && studentToDelete && (

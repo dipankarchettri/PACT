@@ -4,7 +4,7 @@ import { studentAPI } from '../lib/apiClient';
 import { Button } from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import { Chart } from "react-google-charts";
-import { Github, Code2, Linkedin, ArrowLeft, RefreshCw, Trash2, Trophy, ExternalLink } from 'lucide-react';
+import { Github, Code2, Linkedin, ArrowLeft, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import ActivityGraph from '../components/ActivityGraph';
@@ -49,19 +49,7 @@ export default function StudentDetail() {
         }
     };
 
-    const handleDelete = async () => {
-        if (!window.confirm(`Are you sure you want to delete ${student.name}?`)) {
-            return;
-        }
 
-        try {
-            await studentAPI.delete(id);
-            navigate('/');
-        } catch (error) {
-            console.error('Error deleting student:', error);
-            alert('Failed to delete student');
-        }
-    };
 
     // Animation Variants
     const containerVariants = {
@@ -129,12 +117,12 @@ export default function StudentDetail() {
                         onClick={() => navigate('/')}
                     >
                         <Logo className="w-10 h-10" />
-                        <div className="hidden sm:block">
+                        <div>
                             <span className="text-2xl font-black tracking-tight text-slate-900">
                                 PACT
                             </span>
                             <div className="flex flex-col leading-none">
-                                <span className="text-[10px] text-slate-500 font-medium tracking-wider uppercase">Performance Analytics</span>
+                                <span className="text-[10px] text-slate-500 font-medium tracking-wider uppercase">Performance Analytics & Code Tracker</span>
                                 <span className="text-[10px] text-slate-900 font-bold tracking-wider uppercase">Dept of AI&DS, SIET</span>
                             </div>
                         </div>
@@ -152,20 +140,11 @@ export default function StudentDetail() {
                 initial="hidden"
                 animate="visible"
             >
-                {/* Header Actions */}
-                <motion.div variants={itemVariants} className="flex flex-wrap justify-end gap-2 mb-6">
-                    <Button onClick={handleRefresh} disabled={refreshing} variant="outline" className="bg-white/50 backdrop-blur border-slate-200 hover:bg-white transition-all">
-                        <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-                        {refreshing ? 'Refreshing...' : 'Refresh Data'}
-                    </Button>
-                    <Button onClick={handleDelete} variant="destructive" className="bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 shadow-none">
-                        <Trash2 className="w-4 h-4 mr-2" /> Delete
-                    </Button>
-                </motion.div>
+
 
                 {/* Hero Profile Card */}
                 <motion.div variants={itemVariants} className="mb-8">
-                    <Card className="glass-card overflow-hidden border-none bg-gradient-to-r from-white/80 to-white/40">
+                    <Card className="glass-card overflow-hidden !border-slate-300 shadow-sm bg-gradient-to-r from-white/80 to-white/40">
                         <CardContent className="p-6 md:p-10">
                             <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                                 <div className="text-center md:text-left">
@@ -174,8 +153,8 @@ export default function StudentDetail() {
                                     </h1>
                                     <div className="flex flex-wrap gap-3 justify-center md:justify-start text-slate-500 font-medium text-lg">
                                         <span className="bg-slate-100 px-3 py-1 rounded-full text-sm border border-slate-200">{student.usn}</span>
-                                        <span className="bg-slate-100 px-3 py-1 rounded-full text-sm border border-slate-200">Section {student.section}</span>
-                                        <span className="bg-slate-100 px-3 py-1 rounded-full text-sm border border-slate-200">Batch {student.batch}</span>
+                                        <span className="bg-slate-100 px-3 py-1 rounded-full text-sm border border-slate-200">{student.section}</span>
+                                        <span className="bg-slate-100 px-3 py-1 rounded-full text-sm border border-slate-200">{student.batch}</span>
                                     </div>
 
                                     {/* Social Links */}
@@ -198,7 +177,7 @@ export default function StudentDetail() {
                                     </div>
                                 </div>
 
-                                <div className="bg-white/50 p-6 rounded-2xl border border-white/50 text-center min-w-[200px] shadow-sm">
+                                <div className="bg-white/50 p-6 rounded-2xl border border-slate-300 shadow-sm text-center min-w-[200px]">
                                     <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Performance Score</div>
                                     <div className="text-4xl sm:text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-violet-600 to-fuchsia-600">
                                         {student.performanceScore}
@@ -213,7 +192,7 @@ export default function StudentDetail() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8">
                     {/* LeetCode Section */}
                     <motion.div variants={itemVariants}>
-                        <Card className="glass-card border-none h-full relative overflow-hidden group">
+                        <Card className="glass-card !border-slate-300 shadow-sm h-full relative overflow-hidden group">
                             <div className="absolute -right-10 -top-10 opacity-5 group-hover:opacity-10 transition-opacity rotate-12">
                                 <Code2 className="w-48 h-48 text-orange-500" />
                             </div>
@@ -232,15 +211,15 @@ export default function StudentDetail() {
 
                                 {/* Difficulty Grid */}
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                    <div className="p-4 bg-emerald-50/50 rounded-2xl text-center border border-emerald-100 hover:scale-105 transition-transform">
+                                    <div className="p-4 bg-emerald-50/50 rounded-2xl text-center border border-slate-300 shadow-sm hover:scale-105 transition-transform">
                                         <div className="text-2xl font-bold text-emerald-600">{student.leetcodeStats.easySolved}</div>
                                         <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mt-1">Easy</div>
                                     </div>
-                                    <div className="p-4 bg-amber-50/50 rounded-2xl text-center border border-amber-100 hover:scale-105 transition-transform">
+                                    <div className="p-4 bg-amber-50/50 rounded-2xl text-center border border-slate-300 shadow-sm hover:scale-105 transition-transform">
                                         <div className="text-2xl font-bold text-amber-600">{student.leetcodeStats.mediumSolved}</div>
                                         <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider mt-1">Medium</div>
                                     </div>
-                                    <div className="p-4 bg-rose-50/50 rounded-2xl text-center border border-rose-100 hover:scale-105 transition-transform">
+                                    <div className="p-4 bg-rose-50/50 rounded-2xl text-center border border-slate-300 shadow-sm hover:scale-105 transition-transform">
                                         <div className="text-2xl font-bold text-rose-600">{student.leetcodeStats.hardSolved}</div>
                                         <div className="text-[10px] font-bold text-rose-400 uppercase tracking-wider mt-1">Hard</div>
                                     </div>
@@ -248,15 +227,15 @@ export default function StudentDetail() {
 
                                 {/* Streaks & Rating */}
                                 <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                                    <div className="bg-slate-50/50 p-3 rounded-xl text-center">
+                                    <div className="bg-slate-50/50 p-3 rounded-xl text-center border border-slate-300 shadow-sm">
                                         <div className="text-xs text-slate-400 mb-1">Rating</div>
                                         <div className="font-bold text-slate-700">{student.leetcodeStats.contestRating || 'N/A'}</div>
                                     </div>
-                                    <div className="bg-orange-50/50 p-3 rounded-xl text-center border border-orange-100">
+                                    <div className="bg-orange-50/50 p-3 rounded-xl text-center border border-slate-300 shadow-sm">
                                         <div className="text-xs text-orange-400 mb-1 uppercase font-bold">Current</div>
                                         <div className="font-bold text-orange-700">🔥 {student.leetcodeStats.currentStreak}d</div>
                                     </div>
-                                    <div className="bg-violet-50/50 p-3 rounded-xl text-center border border-violet-100">
+                                    <div className="bg-violet-50/50 p-3 rounded-xl text-center border border-slate-300 shadow-sm">
                                         <div className="text-xs text-violet-400 mb-1 uppercase font-bold">Longest</div>
                                         <div className="font-bold text-violet-700">⭐ {student.leetcodeStats.longestStreak}d</div>
                                     </div>
@@ -264,13 +243,15 @@ export default function StudentDetail() {
 
                                 <div className="space-y-4 pt-4 border-t border-slate-100 min-w-0">
                                     <div className="text-sm font-bold text-slate-400 uppercase tracking-wider">Activity</div>
-                                    <ActivityGraph
-                                        type="leetcode"
-                                        username={student.leetcodeUsername}
-                                        data={student.leetcodeStats.submissionCalendar}
-                                        embedded={true}
-                                    />
-                                    <div className="w-full min-w-0 h-32 md:h-48">
+                                    <div className="border border-slate-300 shadow-sm rounded-xl overflow-hidden p-2 bg-white/50">
+                                        <ActivityGraph
+                                            type="leetcode"
+                                            username={student.leetcodeUsername}
+                                            data={student.leetcodeStats.submissionCalendar}
+                                            embedded={true}
+                                        />
+                                    </div>
+                                    <div className="w-full min-w-0 h-32 md:h-48 border border-slate-300 shadow-sm rounded-xl overflow-hidden p-2 bg-white/50">
                                         <TimelineGraph type="leetcode" data={student.leetcodeStats.submissionCalendar} />
                                     </div>
                                 </div>
@@ -280,7 +261,7 @@ export default function StudentDetail() {
 
                     {/* GitHub Section */}
                     <motion.div variants={itemVariants}>
-                        <Card className="glass-card border-none h-full relative overflow-hidden group">
+                        <Card className="glass-card !border-slate-300 shadow-sm h-full relative overflow-hidden group">
                             <div className="absolute -right-10 -top-10 opacity-5 group-hover:opacity-10 transition-opacity rotate-12">
                                 <Github className="w-48 h-48 text-emerald-500" />
                             </div>
@@ -297,17 +278,17 @@ export default function StudentDetail() {
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                                    <div className="p-5 bg-slate-50 rounded-2xl text-center border border-slate-100">
+                                    <div className="p-5 bg-slate-50 rounded-2xl text-center border border-slate-300 shadow-sm">
                                         <div className="text-3xl font-bold text-slate-700 mb-1">{student.githubStats.publicRepos}</div>
                                         <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Repositories</div>
                                     </div>
-                                    <div className="p-5 bg-yellow-50 rounded-2xl text-center border border-yellow-100">
+                                    <div className="p-5 bg-yellow-50 rounded-2xl text-center border border-slate-300 shadow-sm">
                                         <div className="text-3xl font-bold text-yellow-600 mb-1">{student.githubStats.stars || 0}</div>
                                         <div className="text-xs font-bold text-yellow-500 uppercase tracking-wider">Stars Earned</div>
                                     </div>
                                 </div>
 
-                                <div className="bg-emerald-50/30 p-4 rounded-xl border border-emerald-100 flex justify-around items-center">
+                                <div className="bg-emerald-50/30 p-4 rounded-xl border border-slate-300 shadow-sm flex justify-around items-center">
                                     <div className="text-center">
                                         <div className="text-xs text-emerald-500 uppercase font-bold mb-1">Current Streak</div>
                                         <div className="text-xl font-bold text-emerald-700">🔥 {student.githubStats.currentStreak} days</div>
@@ -321,12 +302,14 @@ export default function StudentDetail() {
 
                                 <div className="space-y-4 pt-4 border-t border-slate-100 min-w-0">
                                     <div className="text-sm font-bold text-slate-400 uppercase tracking-wider">Activity</div>
-                                    <ActivityGraph
-                                        type="github"
-                                        username={student.githubUsername}
-                                        embedded={true}
-                                    />
-                                    <div className="w-full min-w-0 h-32 md:h-48">
+                                    <div className="border border-slate-300 shadow-sm rounded-xl overflow-hidden p-2 bg-white/50">
+                                        <ActivityGraph
+                                            type="github"
+                                            username={student.githubUsername}
+                                            embedded={true}
+                                        />
+                                    </div>
+                                    <div className="w-full min-w-0 h-32 md:h-48 border border-slate-300 shadow-sm rounded-xl overflow-hidden p-2 bg-white/50">
                                         <TimelineGraph type="github" username={student.githubUsername} />
                                     </div>
                                 </div>
@@ -338,7 +321,7 @@ export default function StudentDetail() {
                 {/* Language 3D Chart */}
                 {Object.keys(student.leetcodeStats.languages || {}).length > 0 && (
                     <motion.div variants={itemVariants}>
-                        <Card className="glass-card border-none h-[500px]">
+                        <Card className="glass-card !border-slate-300 shadow-sm h-[500px]">
                             <CardHeader>
                                 <CardTitle className="text-slate-700">Language Proficiency</CardTitle>
                                 <CardDescription>Distribution of problems solved by programming language</CardDescription>
@@ -364,8 +347,19 @@ export default function StudentDetail() {
                     </motion.div>
                 )}
 
-                <div className="mt-8 text-center text-slate-400 text-sm">
-                    Last updated: {new Date(student.lastUpdated).toLocaleString()}
+                <div className="mt-8 flex flex-col items-center gap-4">
+                    <Button 
+                        onClick={handleRefresh} 
+                        disabled={refreshing} 
+                        variant="outline" 
+                        className="bg-white/50 backdrop-blur border-slate-200 hover:bg-white transition-all rounded-full shadow-sm"
+                    >
+                        <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                        {refreshing ? 'Refreshing Data...' : 'Refresh Student Data'}
+                    </Button>
+                    <div className="text-slate-400 text-sm">
+                        Last updated: {new Date(student.lastUpdated).toLocaleString()}
+                    </div>
                 </div>
             </motion.div>
         </div>

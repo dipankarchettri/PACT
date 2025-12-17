@@ -5,7 +5,7 @@ import { studentAPI } from '../lib/apiClient';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
-import { Search, MoreVertical, Trophy, Users, Code2, Github, Download, Plus, Edit, Upload, RefreshCw, Zap, Flame, Medal } from 'lucide-react';
+import { Search, MoreVertical, Trophy, Users, Code2, Github, Download, Plus, Edit, Upload, RefreshCw, Zap, Flame } from 'lucide-react';
 import { Chart } from "react-google-charts";
 import TimelineGraph from '../components/TimelineGraph';
 import Logo from '../components/Logo';
@@ -311,7 +311,7 @@ export default function Dashboard() {
                                 PACT
                             </span>
                             <div className="flex flex-col leading-none">
-                                <span className="text-[10px] text-slate-500 font-medium tracking-wider uppercase">Performance Analytics</span>
+                                <span className="text-[10px] text-slate-500 font-medium tracking-wider uppercase">Performance Analytics & Code Tracker</span>
                                 <span className="text-[10px] text-slate-900 font-bold tracking-wider uppercase">Dept of AI&DS, SIET</span>
                             </div>
                         </div>
@@ -322,7 +322,7 @@ export default function Dashboard() {
                             <Button
                                 variant="outline"
                                 onClick={() => setShowLoginModal(true)}
-                                className="rounded-full border-slate-200 text-slate-600 hover:bg-white hover:text-slate-900 bg-white/50"
+                                className="rounded-full border-slate-200 text-slate-600 hover:bg-white hover:text-slate-900 bg-white/50 h-8 px-3 text-xs md:h-10 md:px-4 md:text-sm"
                             >
                                 Admin Dashboard
                             </Button>
@@ -631,67 +631,96 @@ export default function Dashboard() {
 
 
                         <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-100">
+                            <table className="w-full border-separate border-spacing-y-3">
+                                <thead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                     <tr>
-                                        <th className="text-left p-4 pl-6">Student Info</th>
-                                        <th className="text-center p-4">Cohort</th>
-                                        <th className="text-center p-4">LeetCode</th>
-                                        <th className="text-center p-4">GitHub</th>
-                                        <th className="text-center p-4">Score</th>
-                                        <th className="text-center p-4 pr-6">Action</th>
+                                        <th className="text-left p-2 pl-3 md:p-4 md:pl-6 text-[10px] md:text-xs">Student Info</th>
+                                        <th className="hidden md:table-cell text-center p-4">Cohort</th>
+                                        <th className="text-center p-2 md:p-4 text-[10px] md:text-xs">LeetCode</th>
+                                        <th className="text-center p-2 md:p-4 text-[10px] md:text-xs">GitHub</th>
+                                        <th className="text-center p-2 md:p-4 text-[10px] md:text-xs">Score</th>
+                                        <th className="text-center p-2 pr-3 md:p-4 md:pr-6 text-[10px] md:text-xs">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-50">
-                                    {students.map((student) => (
-                                        <motion.tr
-                                            key={student._id}
-                                            whileHover={{ backgroundColor: 'rgba(255,255,255,0.8)' }}
-                                            className="transition-colors group"
-                                        >
-                                            <td className="p-4 pl-6">
-                                                <div className="flex items-center gap-3">
-                                                    {kpiStats.top3Ids[0] === student._id && <Medal className="w-5 h-5 text-yellow-500 fill-yellow-500" />}
-                                                    {kpiStats.top3Ids[1] === student._id && <Medal className="w-5 h-5 text-gray-400 fill-gray-400" />}
-                                                    {kpiStats.top3Ids[2] === student._id && <Medal className="w-5 h-5 text-amber-700 fill-amber-700" />}
-                                                    <div>
-                                                        <div className="font-semibold text-slate-800">{student.name}</div>
-                                                        <div className="text-xs text-slate-400 font-mono">{student.usn}</div>
+                                <tbody>
+                                    {students.map((student) => {
+                                        const isFirst = kpiStats.top3Ids[0] === student._id;
+                                        const isSecond = kpiStats.top3Ids[1] === student._id;
+                                        const isThird = kpiStats.top3Ids[2] === student._id;
+
+                                        let baseClass = "transition-colors duration-200 border-y py-2 md:py-4";
+                                        let leftClass = "border-l rounded-l-xl pl-3 md:pl-6";
+                                        let rightClass = "border-r rounded-r-xl pr-3 md:pr-6";
+                                        
+                                        if (isFirst) {
+                                            const colorClass = " bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-300";
+                                            baseClass += colorClass;
+                                            leftClass += colorClass;
+                                            rightClass += colorClass;
+                                        } else if (isSecond) {
+                                            const colorClass = " bg-gradient-to-r from-slate-50 to-gray-100 border-slate-300";
+                                            baseClass += colorClass;
+                                            leftClass += colorClass;
+                                            rightClass += colorClass;
+                                        } else if (isThird) {
+                                            const colorClass = " bg-gradient-to-r from-orange-50 to-rose-50 border-orange-300";
+                                            baseClass += colorClass;
+                                            leftClass += colorClass;
+                                            rightClass += colorClass;
+                                        } else {
+                                            const colorClass = " bg-white border-slate-200 hover:bg-slate-50";
+                                            baseClass += colorClass;
+                                            leftClass += colorClass;
+                                            rightClass += colorClass;
+                                        }
+
+                                        return (
+                                            <motion.tr
+                                                key={student._id}
+                                                whileHover={{ scale: 1.01 }}
+                                                className="drop-shadow-sm hover:drop-shadow-md transition-all"
+                                            >
+                                                <td className={`${baseClass} ${leftClass}`}>
+                                                    <div className="flex items-center gap-2 md:gap-3">
+                                                        <div>
+                                                            <div className="font-bold text-slate-800 text-xs md:text-sm">{student.name}</div>
+                                                            <div className="text-[10px] text-slate-400 font-mono hidden sm:block">{student.usn}</div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td className="p-4 text-center">
-                                                <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
-                                                    {student.section} - {student.batch}
-                                                </div>
-                                            </td>
-                                            <td className="p-4 text-center">
-                                                <div className="flex flex-col items-center">
-                                                    <span className="font-bold text-orange-600">{student.leetcodeStats?.totalSolved || 0}</span>
-                                                    <span className="text-[10px] text-slate-400 uppercase">Solved</span>
-                                                </div>
-                                            </td>
-                                            <td className="p-4 text-center">
-                                                <div className="flex flex-col items-center">
-                                                    <span className="font-bold text-emerald-600">{student.githubStats?.totalCommits || 0}</span>
-                                                    <span className="text-[10px] text-slate-400 uppercase">Contribs</span>
-                                                </div>
-                                            </td>
-                                            <td className="p-4 text-center">
-                                                <div className="font-bold text-violet-600 text-lg">{student.performanceScore}</div>
-                                            </td>
-                                            <td className="p-4 pr-6 text-center">
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    onClick={() => navigate(`/student/${student._id}`)}
-                                                    className="text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-full"
-                                                >
-                                                    View
-                                                </Button>
-                                            </td>
-                                        </motion.tr>
-                                    ))}
+                                                </td>
+                                                <td className={`${baseClass} text-center hidden md:table-cell`}>
+                                                    <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100/80 border border-slate-200 text-slate-800">
+                                                        {student.section} - {student.batch}
+                                                    </div>
+                                                </td>
+                                                <td className={`${baseClass} text-center`}>
+                                                    <div className="flex flex-col items-center">
+                                                        <span className="font-bold text-orange-600 text-sm md:text-base">{student.leetcodeStats?.totalSolved || 0}</span>
+                                                        <span className="text-[8px] md:text-[10px] text-slate-400 uppercase">Solved</span>
+                                                    </div>
+                                                </td>
+                                                <td className={`${baseClass} text-center`}>
+                                                    <div className="flex flex-col items-center">
+                                                        <span className="font-bold text-emerald-600 text-sm md:text-base">{student.githubStats?.totalCommits || 0}</span>
+                                                        <span className="text-[8px] md:text-[10px] text-slate-400 uppercase">Contribs</span>
+                                                    </div>
+                                                </td>
+                                                <td className={`${baseClass} text-center`}>
+                                                    <div className="font-bold text-violet-600 text-sm md:text-lg">{student.performanceScore}</div>
+                                                </td>
+                                                <td className={`${baseClass} ${rightClass} text-center`}>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        onClick={() => navigate(`/student/${student._id}`)}
+                                                        className="text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-full"
+                                                    >
+                                                        View
+                                                    </Button>
+                                                </td>
+                                            </motion.tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>

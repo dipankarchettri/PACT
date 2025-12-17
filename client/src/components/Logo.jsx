@@ -1,55 +1,91 @@
+import { motion } from 'framer-motion';
+
 export default function Logo({ className = "w-8 h-8" }) {
-  return (
-    <svg
-      viewBox="0 0 100 100"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      {/* Gradient Definitions */}
-      <defs>
-        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#1e293b" stopOpacity={1} />
-          <stop offset="100%" stopColor="#475569" stopOpacity={1} />
-        </linearGradient>
-      </defs>
+    return (
+        <motion.div
+            className={`cursor-pointer ${className}`}
+            initial="initial"
+            whileHover="hover"
+        >
+            <svg
+                viewBox="0 0 100 100"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-full h-full"
+            >
+                <defs>
+                    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#7c3aed" /> {/* Violet-600 */}
+                        <stop offset="100%" stopColor="#c026d3" /> {/* Fuchsia-600 */}
+                    </linearGradient>
+                    <linearGradient id="logoGradientDark" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#4c1d95" /> {/* Violet-900 */}
+                        <stop offset="100%" stopColor="#701a75" /> {/* Fuchsia-900 */}
+                    </linearGradient>
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                        <feMerge>
+                            <feMergeNode in="coloredBlur" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                </defs>
 
-      {/* Background Circle */}
-      <circle cx="50" cy="50" r="48" fill="url(#grad1)" opacity="0.1" />
+                {/* Animated Background Shape (Abstract Hexagon/P) */}
+                <motion.path
+                    d="M30 20 L70 20 L90 50 L70 80 L30 80 L10 50 Z"
+                    fill="url(#logoGradient)"
+                    fillOpacity="0.1"
+                    stroke="url(#logoGradient)"
+                    strokeWidth="2"
+                    variants={{
+                        initial: { pathLength: 1, rotate: 0 },
+                        hover: { 
+                            rotate: 180,
+                            transition: { duration: 0.8, ease: "easeInOut" }
+                        }
+                    }}
+                />
 
-      {/* Performance Graph Line */}
-      <path
-        d="M 20 70 L 35 55 L 50 40 L 65 30 L 80 20"
-        stroke="url(#grad1)"
-        strokeWidth="6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
+                {/* Inner Dynamic Pulse */}
+                <motion.circle
+                    cx="50"
+                    cy="50"
+                    r="15"
+                    fill="url(#logoGradient)"
+                    variants={{
+                        initial: { scale: 1, opacity: 0.5 },
+                        hover: { 
+                            scale: [1, 1.2, 1],
+                            opacity: [0.5, 0.8, 0.5],
+                            transition: { 
+                                duration: 1.5, 
+                                repeat: Infinity 
+                            }
+                        }
+                    }}
+                />
 
-      {/* Data Points */}
-      <circle cx="20" cy="70" r="5" fill="#1e293b" />
-      <circle cx="35" cy="55" r="5" fill="#334155" />
-      <circle cx="50" cy="40" r="5" fill="#475569" />
-      <circle cx="65" cy="30" r="5" fill="#64748b" />
-      <circle cx="80" cy="20" r="6" fill="#0f172a" />
-
-      {/* Code Brackets */}
-      <path
-        d="M 30 75 L 25 80 L 30 85"
-        stroke="#1e293b"
-        strokeWidth="3"
-        strokeLinecap="round"
-        fill="none"
-      />
-      <path
-        d="M 70 75 L 75 80 L 70 85"
-        stroke="#475569"
-        strokeWidth="3"
-        strokeLinecap="round"
-        fill="none"
-      />
-    </svg>
-  );
+                {/* Data Points / Nodes */}
+                <motion.circle cx="30" cy="20" r="4" fill="#6d28d9" variants={{ initial: { scale: 1 }, hover: { scale: 1.5 } }} />
+                <motion.circle cx="70" cy="80" r="4" fill="#a21caf" variants={{ initial: { scale: 1 }, hover: { scale: 1.5 } }} />
+                
+                {/* Connecting Line (Graph Metaphor) */}
+                <motion.path
+                    d="M30 20 C 40 40, 60 60, 70 80"
+                    stroke="white"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeOpacity="0.8"
+                    variants={{
+                        initial: { pathLength: 0.8 },
+                        hover: { 
+                            pathLength: [0.8, 1, 0.8],
+                            transition: { duration: 1.5, repeat: Infinity }
+                        }
+                    }}
+                />
+            </svg>
+        </motion.div>
+    );
 }
-
