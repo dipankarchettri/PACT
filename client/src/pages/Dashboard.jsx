@@ -5,7 +5,7 @@ import { studentAPI } from '../lib/apiClient';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
-import { Search, MoreVertical, Trophy, Users, Code2, Github, Download, Plus, Edit, Upload, RefreshCw } from 'lucide-react';
+import { Search, MoreVertical, Trophy, Users, Code2, Github, Download, Plus, Edit, Upload, RefreshCw, Zap, Flame, Medal } from 'lucide-react';
 import { Chart } from "react-google-charts";
 import TimelineGraph from '../components/TimelineGraph';
 import { motion } from 'framer-motion';
@@ -25,7 +25,12 @@ export default function Dashboard() {
         totalContributions: 0,
         topLeetCode: [],
         topGitHub: [],
-        aggregateCalendar: {}
+        aggregateCalendar: {},
+        champions: {
+            lc: { solved: { name: '', val: 0 }, streak: { name: '', val: 0 }, longest: { name: '', val: 0 } },
+            gh: { contrib: { name: '', val: 0 }, streak: { name: '', val: 0 }, longest: { name: '', val: 0 } }
+        },
+        top3Ids: []
     });
 
     const [refreshing, setRefreshing] = useState(false);
@@ -114,13 +119,42 @@ export default function Dashboard() {
             ]));
         };
 
+        // Find Champions
+        const findChamp = (statsKey, valKey) => {
+            return data.reduce((max, s) => {
+                const val = (s[statsKey]?.[valKey] || 0);
+                return val > max.val ? { name: s.name.split(' ')[0], val } : max;
+            }, { name: '-', val: -1 });
+        };
+
+        const champions = {
+            lc: {
+                solved: findChamp('leetcodeStats', 'totalSolved'),
+                streak: findChamp('leetcodeStats', 'currentStreak'),
+                longest: findChamp('leetcodeStats', 'longestStreak')
+            },
+            gh: {
+                contrib: findChamp('githubStats', 'totalCommits'),
+                streak: findChamp('githubStats', 'currentStreak'),
+                longest: findChamp('githubStats', 'longestStreak')
+            }
+        };
+
+        // Identify Top 3 for badges
+        const top3Ids = [...data]
+            .sort((a, b) => b.performanceScore - a.performanceScore)
+            .slice(0, 3)
+            .map(s => s._id);
+
         setKpiStats({
             totalSolved: solved,
             totalContributions: contributions,
             topLeetCode: getTop('leetcodeStats.totalSolved'),
             topGitHub: getTop('githubStats.totalCommits'),
             lcAggregateCalendar: lcAggCalendar,
-            ghAggregateCalendar: ghAggCalendar
+            ghAggregateCalendar: ghAggCalendar,
+            champions,
+            top3Ids
         });
     };
 
@@ -203,6 +237,23 @@ export default function Dashboard() {
             transition: { type: 'spring', stiffness: 100 }
         }
     };
+
+    const ChampionCard = ({ icon: Icon, title, name, value, subLabel, colorClass, bgClass }) => (
+        <Card className="glass-card hover:-translate-y-1 transition-transform duration-300 !border-slate-300 shadow-sm">
+            <CardContent className="p-4 flex items-center gap-4">
+                <div className={`p-3 rounded-xl ${bgClass}`}>
+                    <Icon className={`w-5 h-5 ${colorClass}`} />
+                </div>
+                <div>
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">{title}</p>
+                    <div className="flex items-baseline gap-2">
+                        <h4 className="text-lg font-bold text-slate-800">{name}</h4>
+                        <span className={`text-sm font-semibold ${colorClass}`}>{value} {subLabel}</span>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
 
     return (
         <div className="min-h-screen bg-slate-50 relative overflow-hidden font-sans">
@@ -323,33 +374,21 @@ export default function Dashboard() {
                 initial="hidden"
                 animate="visible"
             >
-                {/* Overview Section */}
-                <div className="mb-12">
-                    <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-6">Overview</h2>
-                    <motion.div variants={itemVariants} className="max-w-sm">
-                        <Card className="glass-card hover:-translate-y-1 transition-transform duration-300">
-                            <CardContent className="p-6 flex items-center gap-4">
-                                <div className="p-3 bg-indigo-100 rounded-xl">
-                                    <Users className="w-6 h-6 text-indigo-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-slate-500">Active Students</p>
-                                    <h3 className="text-2xl font-bold text-slate-800">{loading ? '...' : students.length}</h3>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                </div>
+
 
                 {/* Platform Analytics - Side by Side */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
                     {/* LeetCode Statistics */}
-                    <div className="flex flex-col gap-6">
-                        <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-widest">LeetCode Statistics</h2>
+                    <div className="flex flex-col gap-6 p-6 rounded-2xl bg-white/40 border border-slate-300 shadow-sm">
+                        <div className="flex flex-row justify-between items-center mb-2">
+                            <h2 className="text-sm font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                                <Code2 className="w-4 h-4 text-orange-500" /> LeetCode Statistics
+                            </h2>
+                        </div>
 
                         {/* KPI */}
                         <motion.div variants={itemVariants}>
-                            <Card className="glass-card hover:-translate-y-1 transition-transform duration-300">
+                            <Card className="glass-card hover:-translate-y-1 transition-transform duration-300 !border-slate-300 shadow-sm">
                                 <CardContent className="p-6 flex items-center gap-4">
                                     <div className="p-3 bg-orange-100 rounded-xl">
                                         <Code2 className="w-6 h-6 text-orange-600" />
@@ -362,10 +401,43 @@ export default function Dashboard() {
                             </Card>
                         </motion.div>
 
+                        {/* Champions Row */}
+                        {!loading && (
+                            <div className="grid grid-cols-3 gap-2">
+                                <ChampionCard
+                                    icon={Trophy}
+                                    title="Most Solved"
+                                    name={kpiStats.champions.lc.solved.name}
+                                    value={kpiStats.champions.lc.solved.val}
+                                    subLabel="probs"
+                                    bgClass="bg-orange-100"
+                                    colorClass="text-orange-600"
+                                />
+                                <ChampionCard
+                                    icon={Flame}
+                                    title="Longest"
+                                    name={kpiStats.champions.lc.longest.name}
+                                    value={kpiStats.champions.lc.longest.val}
+                                    subLabel="days"
+                                    bgClass="bg-red-100"
+                                    colorClass="text-red-600"
+                                />
+                                <ChampionCard
+                                    icon={Zap}
+                                    title="Current"
+                                    name={kpiStats.champions.lc.streak.name}
+                                    value={kpiStats.champions.lc.streak.val}
+                                    subLabel="days"
+                                    bgClass="bg-yellow-100"
+                                    colorClass="text-yellow-600"
+                                />
+                            </div>
+                        )}
+
                         {/* Activity Graph */}
                         <motion.div variants={itemVariants}>
-                            <Card className="glass-card h-80 overflow-hidden">
-                                <CardContent className="p-0 h-full relative">
+                            <Card className="glass-card h-80 overflow-hidden !border-slate-300 shadow-sm">
+                                <CardContent className="p-0 h-full relative pt-12">
                                     <div className="absolute top-4 left-6 z-10">
                                         <h3 className="font-semibold text-slate-700">Submission Trend</h3>
                                     </div>
@@ -380,9 +452,11 @@ export default function Dashboard() {
 
                         {/* Top Solvers Chart */}
                         <motion.div variants={itemVariants}>
-                            <Card className="glass-card h-80">
-                                <CardContent className="p-4 h-full relative flex flex-col">
-                                    <h3 className="font-semibold text-slate-700 mb-4">Top Solvers</h3>
+                            <Card className="glass-card h-80 !border-slate-300 shadow-sm">
+                                <CardContent className="p-4 h-full relative flex flex-col pt-12">
+                                    <div className="absolute top-4 left-6 z-10">
+                                        <h3 className="font-semibold text-slate-700">Top Solvers</h3>
+                                    </div>
                                     <div className="flex-1">
                                         <Chart
                                             chartType="Bar"
@@ -407,12 +481,16 @@ export default function Dashboard() {
                     </div>
 
                     {/* GitHub Statistics */}
-                    <div className="flex flex-col gap-6">
-                        <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-widest">GitHub Statistics</h2>
+                    <div className="flex flex-col gap-6 p-6 rounded-2xl bg-white/40 border border-slate-300 shadow-sm">
+                        <div className="flex flex-row justify-between items-center mb-2">
+                            <h2 className="text-sm font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                                <Github className="w-4 h-4 text-emerald-500" /> GitHub Statistics
+                            </h2>
+                        </div>
 
                         {/* KPI */}
                         <motion.div variants={itemVariants}>
-                            <Card className="glass-card hover:-translate-y-1 transition-transform duration-300">
+                            <Card className="glass-card hover:-translate-y-1 transition-transform duration-300 !border-slate-300 shadow-sm">
                                 <CardContent className="p-6 flex items-center gap-4">
                                     <div className="p-3 bg-emerald-100 rounded-xl">
                                         <Github className="w-6 h-6 text-emerald-600" />
@@ -425,10 +503,43 @@ export default function Dashboard() {
                             </Card>
                         </motion.div>
 
+                        {/* Champions Row */}
+                        {!loading && (
+                            <div className="grid grid-cols-3 gap-2">
+                                <ChampionCard
+                                    icon={Code2}
+                                    title="Most Contribs"
+                                    name={kpiStats.champions.gh.contrib.name}
+                                    value={kpiStats.champions.gh.contrib.val}
+                                    subLabel="commits"
+                                    bgClass="bg-emerald-100"
+                                    colorClass="text-emerald-600"
+                                />
+                                <ChampionCard
+                                    icon={Flame}
+                                    title="Longest"
+                                    name={kpiStats.champions.gh.longest.name}
+                                    value={kpiStats.champions.gh.longest.val}
+                                    subLabel="days"
+                                    bgClass="bg-red-100"
+                                    colorClass="text-red-600"
+                                />
+                                <ChampionCard
+                                    icon={Zap}
+                                    title="Current"
+                                    name={kpiStats.champions.gh.streak.name}
+                                    value={kpiStats.champions.gh.streak.val}
+                                    subLabel="days"
+                                    bgClass="bg-yellow-100"
+                                    colorClass="text-yellow-600"
+                                />
+                            </div>
+                        )}
+
                         {/* Activity Graph */}
                         <motion.div variants={itemVariants}>
-                            <Card className="glass-card h-80 overflow-hidden">
-                                <CardContent className="p-0 h-full relative">
+                            <Card className="glass-card h-80 overflow-hidden !border-slate-300 shadow-sm">
+                                <CardContent className="p-0 h-full relative pt-12">
                                     <div className="absolute top-4 left-6 z-10">
                                         <h3 className="font-semibold text-slate-700">Contribution Trend</h3>
                                     </div>
@@ -443,9 +554,11 @@ export default function Dashboard() {
 
                         {/* Top Contributors Chart */}
                         <motion.div variants={itemVariants}>
-                            <Card className="glass-card h-80">
-                                <CardContent className="p-4 h-full relative flex flex-col">
-                                    <h3 className="font-semibold text-slate-700 mb-4">Top Contributors</h3>
+                            <Card className="glass-card h-80 !border-slate-300 shadow-sm">
+                                <CardContent className="p-4 h-full relative flex flex-col pt-12">
+                                    <div className="absolute top-4 left-6 z-10">
+                                        <h3 className="font-semibold text-slate-700">Top Contributors</h3>
+                                    </div>
                                     <div className="flex-1">
                                         <Chart
                                             chartType="Bar"
@@ -472,7 +585,7 @@ export default function Dashboard() {
 
                 {/* Data Grid Section */}
                 <motion.div variants={itemVariants}>
-                    <Card className="glass-card overflow-hidden">
+                    <Card className="glass-card overflow-hidden !border-slate-300 shadow-sm">
                         <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center bg-white/50">
                             {/* Controls */}
                             <div className="flex-1 w-full max-w-lg relative flex gap-2">
@@ -510,7 +623,7 @@ export default function Dashboard() {
                                 </Button>
                             </div>
                         </div>
-        // ... existing JSX ...
+
 
                         <div className="overflow-x-auto">
                             <table className="w-full">
@@ -532,8 +645,15 @@ export default function Dashboard() {
                                             className="transition-colors group"
                                         >
                                             <td className="p-4 pl-6">
-                                                <div className="font-semibold text-slate-800">{student.name}</div>
-                                                <div className="text-xs text-slate-400 font-mono">{student.usn}</div>
+                                                <div className="flex items-center gap-3">
+                                                    {kpiStats.top3Ids[0] === student._id && <Medal className="w-5 h-5 text-yellow-500 fill-yellow-500" />}
+                                                    {kpiStats.top3Ids[1] === student._id && <Medal className="w-5 h-5 text-gray-400 fill-gray-400" />}
+                                                    {kpiStats.top3Ids[2] === student._id && <Medal className="w-5 h-5 text-amber-700 fill-amber-700" />}
+                                                    <div>
+                                                        <div className="font-semibold text-slate-800">{student.name}</div>
+                                                        <div className="text-xs text-slate-400 font-mono">{student.usn}</div>
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td className="p-4 text-center">
                                                 <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
