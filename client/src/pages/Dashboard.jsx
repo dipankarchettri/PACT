@@ -6,7 +6,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import { Search, MoreVertical, Trophy, Users, Code2, Github, Download, Plus, Edit, Upload, RefreshCw, Zap, Flame } from 'lucide-react';
-import { Chart } from "react-google-charts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
 import TimelineGraph from '../components/TimelineGraph';
 import Logo from '../components/Logo';
 import { motion } from 'framer-motion';
@@ -113,11 +113,11 @@ export default function Dashboard() {
                 return valB - valA;
             });
 
-            return sorted.slice(0, 5).map(s => ([
-                s.name.split(' ')[0],
-                key.split('.').reduce((o, i) => o[i], s) || 0,
-                COLORS[Math.floor(Math.random() * COLORS.length)] // Random color for bar
-            ]));
+            return sorted.slice(0, 5).map(s => ({
+                name: s.name.split(' ')[0],
+                value: key.split('.').reduce((o, i) => o[i], s) || 0,
+                fill: COLORS[Math.floor(Math.random() * COLORS.length)]
+            }));
         };
 
         // Find Champions
@@ -241,15 +241,15 @@ export default function Dashboard() {
 
     const ChampionCard = ({ icon: Icon, title, name, value, subLabel, colorClass, bgClass }) => (
         <Card className="glass-card hover:-translate-y-1 transition-transform duration-300 !border-slate-300 shadow-sm">
-            <CardContent className="p-4 flex items-center gap-4">
-                <div className={`p-3 rounded-xl ${bgClass}`}>
-                    <Icon className={`w-5 h-5 ${colorClass}`} />
+            <CardContent className="p-3 md:p-4 flex items-center gap-2 md:gap-4">
+                <div className={`p-1.5 md:p-3 rounded-xl ${bgClass}`}>
+                    <Icon className={`w-3.5 h-3.5 md:w-5 md:h-5 ${colorClass}`} />
                 </div>
                 <div>
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">{title}</p>
-                    <div className="flex items-baseline gap-2">
-                        <h4 className="text-lg font-bold text-slate-800">{name}</h4>
-                        <span className={`text-sm font-semibold ${colorClass}`}>{value} {subLabel}</span>
+                    <p className="text-[9px] md:text-xs font-medium text-slate-500 uppercase tracking-widest">{title}</p>
+                    <div className="flex items-baseline gap-1.5 md:gap-2">
+                        <h4 className="text-sm md:text-lg font-bold text-slate-800">{name}</h4>
+                        <span className={`text-[10px] md:text-sm font-semibold ${colorClass}`}>{value} {subLabel}</span>
                     </div>
                 </div>
             </CardContent>
@@ -330,7 +330,7 @@ export default function Dashboard() {
                             <div className="relative">
                                 <Button
                                     onClick={() => setShowAdminMenu(!showAdminMenu)}
-                                    className="rounded-full bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-violet-200"
+                                    className="rounded-full bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-violet-200 h-8 px-3 text-xs md:h-10 md:px-4 md:text-sm"
                                 >
                                     Admin Controls {showAdminMenu ? '▲' : '▼'}
                                 </Button>
@@ -394,13 +394,13 @@ export default function Dashboard() {
                         {/* KPI */}
                         <motion.div variants={itemVariants}>
                             <Card className="glass-card hover:-translate-y-1 transition-transform duration-300 !border-slate-300 shadow-sm">
-                                <CardContent className="p-6 flex items-center gap-4">
-                                    <div className="p-3 bg-orange-100 rounded-xl">
-                                        <Code2 className="w-6 h-6 text-orange-600" />
+                                <CardContent className="p-3 md:p-6 flex items-center gap-3 md:gap-4">
+                                    <div className="p-2 md:p-3 bg-orange-100 rounded-xl">
+                                        <Code2 className="w-5 h-5 md:w-6 md:h-6 text-orange-600" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-slate-500">Total Solved</p>
-                                        <h3 className="text-3xl font-bold text-slate-800">{loading ? '...' : kpiStats.totalSolved.toLocaleString()}</h3>
+                                        <p className="text-xs md:text-sm font-medium text-slate-500">Total Solved</p>
+                                        <h3 className="text-xl md:text-3xl font-bold text-slate-800">{loading ? '...' : kpiStats.totalSolved.toLocaleString()}</h3>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -441,8 +441,8 @@ export default function Dashboard() {
 
                         {/* Activity Graph */}
                         <motion.div variants={itemVariants}>
-                            <Card className="glass-card overflow-hidden !border-slate-300 shadow-sm">
-                                <CardContent className="p-6">
+                            <Card className="bg-transparent overflow-hidden !border-slate-300 shadow-sm">
+                                <CardContent className="p-3 md:p-6">
                                     <h3 className="font-semibold text-slate-700 mb-4">Submission Trend</h3>
                                     <div className="w-full h-40 md:h-64">
                                         <TimelineGraph
@@ -456,32 +456,39 @@ export default function Dashboard() {
 
                         {/* Top Solvers Chart */}
                         <motion.div variants={itemVariants}>
-                            <Card className="glass-card !border-slate-300 shadow-sm">
-                                <CardContent className="p-6">
+                            <div className="bg-transparent !border-slate-300 shadow-sm rounded-xl border overflow-hidden">
+                                <div className="p-3 md:p-6">
                                     <h3 className="font-semibold text-slate-700 mb-4">Top Solvers</h3>
                                     <div className="w-full h-40 md:h-64">
-                                        <Chart
-                                            chartType="Bar"
-                                            data={[
-                                                ["Student", "Solved", { role: "style" }],
-                                                ...kpiStats.topLeetCode
-                                            ]}
-                                            options={{
-                                                backgroundColor: 'transparent',
-                                                legend: { position: 'none' },
-                                                chartArea: { width: '80%', height: '70%' },
-                                                fontName: 'Outfit',
-                                                bars: 'vertical',
-                                                vAxis: {
-                                                    gridlines: { count: -1, interval: 10 }
-                                                }
-                                            }}
-                                            width={"100%"}
-                                            height={"100%"}
-                                        />
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={kpiStats.topLeetCode} margin={{ top: 0, right: 0, left: 0, bottom: 20 }}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                                                <XAxis 
+                                                    dataKey="name" 
+                                                    axisLine={false} 
+                                                    tickLine={false} 
+                                                    tick={{ fontSize: 10, fill: '#64748b' }} 
+                                                />
+                                                <YAxis 
+                                                    axisLine={false} 
+                                                    tickLine={false} 
+                                                    tick={{ fontSize: 10, fill: '#64748b' }} 
+                                                    width={30}
+                                                />
+                                                <Tooltip 
+                                                    cursor={{ fill: 'transparent' }}
+                                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                />
+                                                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                                                    {kpiStats.topLeetCode.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                                                    ))}
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
                                     </div>
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
                         </motion.div>
                     </div>
 
@@ -496,13 +503,13 @@ export default function Dashboard() {
                         {/* KPI */}
                         <motion.div variants={itemVariants}>
                             <Card className="glass-card hover:-translate-y-1 transition-transform duration-300 !border-slate-300 shadow-sm">
-                                <CardContent className="p-6 flex items-center gap-4">
-                                    <div className="p-3 bg-emerald-100 rounded-xl">
-                                        <Github className="w-6 h-6 text-emerald-600" />
+                                <CardContent className="p-3 md:p-6 flex items-center gap-3 md:gap-4">
+                                    <div className="p-2 md:p-3 bg-emerald-100 rounded-xl">
+                                        <Github className="w-5 h-5 md:w-6 md:h-6 text-emerald-600" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-slate-500">Total Contributions</p>
-                                        <h3 className="text-3xl font-bold text-slate-800">{loading ? '...' : kpiStats.totalContributions.toLocaleString()}</h3>
+                                        <p className="text-xs md:text-sm font-medium text-slate-500">Total Contributions</p>
+                                        <h3 className="text-xl md:text-3xl font-bold text-slate-800">{loading ? '...' : kpiStats.totalContributions.toLocaleString()}</h3>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -543,8 +550,8 @@ export default function Dashboard() {
 
                         {/* Activity Graph */}
                         <motion.div variants={itemVariants}>
-                            <Card className="glass-card overflow-hidden !border-slate-300 shadow-sm">
-                                <CardContent className="p-6">
+                            <Card className="bg-transparent overflow-hidden !border-slate-300 shadow-sm">
+                                <CardContent className="p-3 md:p-6">
                                     <h3 className="font-semibold text-slate-700 mb-4">Contribution Trend</h3>
                                     <div className="w-full h-40 md:h-64">
                                         <TimelineGraph
@@ -558,32 +565,39 @@ export default function Dashboard() {
 
                         {/* Top Contributors Chart */}
                         <motion.div variants={itemVariants}>
-                            <Card className="glass-card !border-slate-300 shadow-sm">
-                                <CardContent className="p-6">
+                            <div className="bg-transparent !border-slate-300 shadow-sm rounded-xl border overflow-hidden">
+                                <div className="p-3 md:p-6">
                                     <h3 className="font-semibold text-slate-700 mb-4">Top Contributors</h3>
                                     <div className="w-full h-40 md:h-64">
-                                        <Chart
-                                            chartType="Bar"
-                                            data={[
-                                                ["Student", "Contributions", { role: "style" }],
-                                                ...kpiStats.topGitHub
-                                            ]}
-                                            options={{
-                                                backgroundColor: 'transparent',
-                                                legend: { position: 'none' },
-                                                chartArea: { width: '80%', height: '70%' },
-                                                fontName: 'Outfit',
-                                                bars: 'vertical',
-                                                vAxis: {
-                                                    gridlines: { count: -1, interval: 10 }
-                                                }
-                                            }}
-                                            width={"100%"}
-                                            height={"100%"}
-                                        />
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={kpiStats.topGitHub} margin={{ top: 0, right: 0, left: 0, bottom: 20 }}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                                                <XAxis 
+                                                    dataKey="name" 
+                                                    axisLine={false} 
+                                                    tickLine={false} 
+                                                    tick={{ fontSize: 10, fill: '#64748b' }} 
+                                                />
+                                                <YAxis 
+                                                    axisLine={false} 
+                                                    tickLine={false} 
+                                                    tick={{ fontSize: 10, fill: '#64748b' }} 
+                                                    width={30}
+                                                />
+                                                <Tooltip 
+                                                    cursor={{ fill: 'transparent' }}
+                                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                />
+                                                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                                                    {kpiStats.topGitHub.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                                                    ))}
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
                                     </div>
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
                         </motion.div>
                     </div>
                 </div>
@@ -630,7 +644,7 @@ export default function Dashboard() {
                         </div>
 
 
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto px-4 md:px-8">
                             <table className="w-full border-separate border-spacing-y-3">
                                 <thead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                     <tr>

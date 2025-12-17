@@ -265,7 +265,7 @@ export default function StudentDetail() {
 
                                 <div className="space-y-3 pt-3 border-t border-slate-100 min-w-0">
                                     <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Activity</div>
-                                    <div className="border border-slate-300 shadow-sm rounded-xl overflow-hidden p-2 bg-white/50">
+                                    <div className="border border-slate-300 shadow-sm rounded-xl overflow-hidden p-2 bg-transparent">
                                         <ActivityGraph
                                             type="leetcode"
                                             username={student.leetcodeUsername}
@@ -273,7 +273,7 @@ export default function StudentDetail() {
                                             embedded={true}
                                         />
                                     </div>
-                                    <div className="w-full min-w-0 h-28 md:h-auto md:aspect-[7/1] border border-slate-300 shadow-sm rounded-xl overflow-hidden p-2 bg-white/50">
+                                    <div className="w-full min-w-0 h-28 md:h-auto md:aspect-[7/1] border border-slate-300 shadow-sm rounded-xl overflow-hidden p-2 bg-transparent">
                                         <TimelineGraph type="leetcode" data={student.leetcodeStats.submissionCalendar} />
                                     </div>
                                 </div>
@@ -323,14 +323,14 @@ export default function StudentDetail() {
 
                                 <div className="space-y-3 pt-3 border-t border-slate-100 min-w-0">
                                     <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Activity</div>
-                                    <div className="border border-slate-300 shadow-sm rounded-xl overflow-hidden p-2 bg-white/50">
+                                    <div className="border border-slate-300 shadow-sm rounded-xl overflow-hidden p-2 bg-transparent">
                                         <ActivityGraph
                                             type="github"
                                             username={student.githubUsername}
                                             embedded={true}
                                         />
                                     </div>
-                                    <div className="w-full min-w-0 h-28 md:h-auto md:aspect-[7/1] border border-slate-300 shadow-sm rounded-xl overflow-hidden p-2 bg-white/50">
+                                    <div className="w-full min-w-0 h-28 md:h-auto md:aspect-[7/1] border border-slate-300 shadow-sm rounded-xl overflow-hidden p-2 bg-transparent">
                                         <TimelineGraph type="github" username={student.githubUsername} />
                                     </div>
                                 </div>

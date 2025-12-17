@@ -99,7 +99,7 @@ const TimelineGraph = ({ type, username, data }) => {
     const label = type === 'github' ? 'Contributions' : 'Questions';
 
     return (
-        <Card className="w-full bg-white/50 backdrop-blur border-none shadow-none h-full">
+        <Card className="w-full bg-transparent border-none shadow-none h-full">
             <CardContent className="px-0 h-full pb-0">
                 <div className="h-full w-full">
                     <ResponsiveContainer width="100%" height="100%">
