@@ -29,7 +29,7 @@ Create `.env` files:
 ```env
 MONGODB_URI=mongodb://localhost:27017/pact
 GITHUB_TOKEN=your_github_token_here
-LEETCODE_API_URL=https://alfa-leetcode-api.onrender.com
+
 PORT=5000
 NODE_ENV=development
 ```

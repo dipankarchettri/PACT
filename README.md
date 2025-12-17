@@ -45,7 +45,7 @@ PACT is a centralized dashboard for educators to monitor student programming pro
 1. **Clone the repository**
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/dipankarchettri/PACT.git
 cd pact-analytics
 ```
 
@@ -69,7 +69,7 @@ cd ../server && npm install
 ```env
 MONGODB_URI=mongodb://localhost:27017/edustat
 GITHUB_TOKEN=your_github_personal_access_token
-LEETCODE_API_URL=https://alfa-leetcode-api.onrender.com
+
 PORT=5000
 NODE_ENV=development
 ```
