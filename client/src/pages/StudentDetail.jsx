@@ -270,7 +270,7 @@ export default function StudentDetail() {
                                         data={student.leetcodeStats.submissionCalendar}
                                         embedded={true}
                                     />
-                                    <div className="w-full min-w-0">
+                                    <div className="w-full min-w-0 h-32 md:h-48">
                                         <TimelineGraph type="leetcode" data={student.leetcodeStats.submissionCalendar} />
                                     </div>
                                 </div>
@@ -326,7 +326,7 @@ export default function StudentDetail() {
                                         username={student.githubUsername}
                                         embedded={true}
                                     />
-                                    <div className="w-full min-w-0">
+                                    <div className="w-full min-w-0 h-32 md:h-48">
                                         <TimelineGraph type="github" username={student.githubUsername} />
                                     </div>
                                 </div>
