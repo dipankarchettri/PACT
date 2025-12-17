@@ -13,6 +13,38 @@ PACT is a centralized dashboard for educators to monitor student programming pro
 - **Export Functionality**: Download student data as CSV.
 - **Cron Jobs**: Automated daily data fetching to ensure fresh analytics.
 
+## 🚧 Features to be Implemented
+
+### 🏅 PACT Badges
+
+A gamified milestone system to recognize student achievements.
+
+- **Top Solver Badge**: Awarded for solving 100+ LeetCode problems.
+- **Streak Master**: For students maintaining a 30-day coding streak.
+- **Open Source Hero**: For significant contributions to GitHub repositories.
+
+### 📄 Resume Uploader & Parser
+
+Integrated resume management for placement readiness.
+
+- **Upload Portal**: Students can upload their resumes directly to their profiles.
+- **Auto-Parsing**: Extract key skills and projects to auto-populate profile tags.
+- **Recruiter View**: Allow verified recruiters to view student stats alongside their resumes.
+
+### 🧠 Smart Skill Analysis
+
+AI-driven insights to identify knowledge gaps.
+
+- **Topic Analysis**: Breakdown of problems solved by category (DP, Graphs, Trees).
+- **Recommendation Engine**: Suggest specific LeetCode problems based on weak areas.
+
+### 👥 Peer Comparison
+
+Benchmark performance against the cohort.
+
+- **Anonymized Comparison**: overlay a student's activity graph with the batch average.
+- **Percentile Ranking**: See where a student stands in terms of problems solved and consistency.
+
 ## 📋 Tech Stack
 
 ### Frontend
