@@ -113,21 +113,21 @@ const ActivityGraph = ({ type, username, data, embedded = false }) => {
     const totalCount = calendarData.reduce((acc, day) => acc + (day.count || 0), 0);
 
     const content = (
-        <div className={`w-full ${embedded ? 'mt-4' : ''}`}>
+        <div className={`w-full min-w-0 ${embedded ? 'mt-4' : ''}`}>
             <div className="flex justify-between items-center mb-2 text-xs text-muted-foreground px-1">
                 <span>{totalCount} {countLabel} in last year</span>
             </div>
 
-            {/* Full Width Responsive Area */}
-            <div className="w-full pb-2">
-                <div className="flex w-full gap-[3px]">
+            {/* Full Width Responsive Area - Rescaling */ }
+            <div className="w-full pb-2 min-w-0">
+                <div className="flex w-full min-w-0 gap-[1px] sm:gap-[2px] md:gap-[3px]">
                     {/* Render Weeks (Chronological order) */}
                     {weeks.map((week, wIndex) => {
                         const firstDay = week.find(d => d !== null);
                         const showMonth = firstDay && new Date(firstDay.date).getDate() <= 7;
 
                         return (
-                            <div key={wIndex} className="flex-1 flex flex-col gap-[3px]">
+                            <div key={wIndex} className="flex-1 min-w-0 flex flex-col gap-[1px] sm:gap-[2px] md:gap-[3px]">
                                 {/* Days in Week */}
                                 {week.map((day, dIndex) => (
                                     <div

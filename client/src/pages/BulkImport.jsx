@@ -11,9 +11,9 @@ import {
     Save,
     CheckCircle,
     AlertCircle,
-    ArrowLeft,
-    Trophy
+    ArrowLeft
 } from 'lucide-react';
+import Logo from '../components/Logo';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
@@ -51,11 +51,14 @@ export default function BulkImport() {
         Papa.parse(file, {
             header: true,
             skipEmptyLines: true,
+            transformHeader: (h) => h.trim(),
             complete: (results) => {
                 const standardizedData = results.data.map((row, index) => ({
                     id: index,
                     name: row['NAME'] || '',
                     usn: row['USN'] || '',
+                    email: row['PROFESSIONAL EMAIL ID'] || row['PERSONAL EMAIL ID'] || '',
+                    phoneNumber: row['CONTACT NUMBER'] || '',
                     section: globalSection,
                     batch: globalBatch,
                     githubUsername: '',
@@ -97,6 +100,8 @@ export default function BulkImport() {
             await studentAPI.create({
                 name: student.name,
                 usn: student.usn,
+                email: student.email,
+                phoneNumber: student.phoneNumber,
                 section: student.section,
                 batch: parseInt(student.batch),
                 githubUsername: student.githubUsername,
@@ -112,15 +117,9 @@ export default function BulkImport() {
             console.error(error);
             const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Failed to save';
 
-            if (errorMsg === 'USN already exists') {
-                setParsedData(prev => prev.map(row =>
-                    row.id === student.id ? { ...row, status: 'skipped', message: 'Skipped (Duplicate)' } : row
-                ));
-            } else {
-                setParsedData(prev => prev.map(row =>
-                    row.id === student.id ? { ...row, status: 'error', message: errorMsg } : row
-                ));
-            }
+            setParsedData(prev => prev.map(row =>
+                row.id === student.id ? { ...row, status: 'error', message: errorMsg } : row
+            ));
         }
     };
 
@@ -182,28 +181,33 @@ export default function BulkImport() {
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans relative">
-            <nav className="sticky top-0 z-50 glass border-b border-white/20 px-8 py-4 mb-8">
-                <div className="w-full px-6 flex justify-between items-center">
+            <nav className="sticky top-0 z-50 glass border-b border-white/20 px-4 md:px-8 py-4 mb-8">
+                <div className="w-full px-2 md:px-6 flex justify-between items-center">
                     <div
-                        className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition"
+                        className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition"
                         onClick={() => navigate('/')}
                     >
-                        <div className="bg-gradient-to-r from-violet-600 to-fuchsia-600 p-2 rounded-lg text-white">
-                            <Trophy className="w-5 h-5" />
+                        <Logo className="w-10 h-10" />
+                        <div>
+                            <span className="text-2xl font-black tracking-tight text-slate-900">
+                                PACT
+                            </span>
+                            <div className="flex flex-col leading-none">
+                                <span className="text-[10px] text-slate-500 font-medium tracking-wider uppercase">Performance Analytics</span>
+                                <span className="text-[10px] text-slate-900 font-bold tracking-wider uppercase">Dept of AI&DS, SIET</span>
+                            </div>
                         </div>
-                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">
-                            PACT
-                        </span>
-                        <span className="text-slate-400 font-medium ml-2">| Bulk Import</span>
+                        <span className="hidden sm:inline text-slate-400 font-medium ml-2 self-center pt-1">| Bulk Import</span>
                     </div>
                     <Button variant="ghost" onClick={() => navigate('/')} className="text-slate-500 hover:text-slate-800">
-                        <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
+                        <ArrowLeft className="w-4 h-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Back to Dashboard</span>
                     </Button>
                 </div>
             </nav>
 
             <motion.div
-                className="w-full px-8 pb-12"
+                className="w-full px-4 md:px-8 pb-12"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
             >
@@ -211,7 +215,7 @@ export default function BulkImport() {
                     <div className="max-w-3xl mx-auto space-y-8">
                         <Card className="glass-card mb-8">
                             <CardContent className="p-6">
-                                <div className="grid grid-cols-2 gap-6 mb-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                                     <div>
                                         <label className="text-sm font-medium text-slate-700 mb-2 block">Default Batch Year</label>
                                         <Input
@@ -245,7 +249,7 @@ export default function BulkImport() {
                             <h3 className="text-xl font-bold text-slate-700 mb-2">Upload Student CSV</h3>
                             <p className="text-slate-500 mb-6">Drag & drop your file here, or click to browse</p>
                             <div className="text-xs text-slate-400 font-mono bg-slate-100 inline-block px-4 py-2 rounded-lg">
-                                Required columns: USN, NAME
+                                Expected: USN, NAME, PROFESSIONAL EMAIL ID, CONTACT NUMBER
                             </div>
                         </div>
                     </div>
@@ -284,6 +288,7 @@ export default function BulkImport() {
                                             <th className="p-4 text-left font-semibold text-slate-600">Student Info (Read-Only)</th>
                                             <th className="p-4 text-left font-semibold text-slate-600 w-24">Batch</th>
                                             <th className="p-4 text-left font-semibold text-slate-600 w-24">Sec</th>
+                                            <th className="p-4 text-left font-semibold text-slate-600">Contact</th>
                                             <th className="p-4 text-left font-semibold text-slate-600 w-48">GitHub</th>
                                             <th className="p-4 text-left font-semibold text-slate-600 w-48">LeetCode</th>
                                             <th className="p-4 text-left font-semibold text-slate-600 w-48">LinkedIn</th>
@@ -312,6 +317,22 @@ export default function BulkImport() {
                                                         onChange={(e) => handleInputChange(row.id, 'section', e.target.value)}
                                                         className="h-8 text-xs bg-white/50"
                                                     />
+                                                </td>
+                                                <td className="p-4">
+                                                    <div className="flex flex-col gap-1">
+                                                        <Input
+                                                            value={row.email}
+                                                            onChange={(e) => handleInputChange(row.id, 'email', e.target.value)}
+                                                            placeholder="Email"
+                                                            className="h-8 text-xs bg-white/50"
+                                                        />
+                                                        <Input
+                                                            value={row.phoneNumber}
+                                                            onChange={(e) => handleInputChange(row.id, 'phoneNumber', e.target.value)}
+                                                            placeholder="Phone"
+                                                            className="h-8 text-xs bg-white/50"
+                                                        />
+                                                    </div>
                                                 </td>
                                                 <td className="p-4">
                                                     <Input

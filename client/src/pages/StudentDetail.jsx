@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 
 import ActivityGraph from '../components/ActivityGraph';
 import TimelineGraph from '../components/TimelineGraph';
+import Logo from '../components/Logo';
 
 export default function StudentDetail() {
     const { id } = useParams();
@@ -121,33 +122,38 @@ export default function StudentDetail() {
             </div>
 
             {/* Navbar */}
-            <nav className="sticky top-0 z-50 glass border-b border-white/20 px-8 py-4 mb-8">
-                <div className="w-full px-6 flex justify-between items-center">
+            <nav className="sticky top-0 z-50 glass border-b border-white/20 px-4 md:px-8 py-4 mb-8">
+                <div className="w-full px-2 md:px-6 flex justify-between items-center">
                     <div
-                        className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition"
+                        className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition"
                         onClick={() => navigate('/')}
                     >
-                        <div className="bg-gradient-to-r from-violet-600 to-fuchsia-600 p-2 rounded-lg text-white">
-                            <Trophy className="w-5 h-5" />
+                        <Logo className="w-10 h-10" />
+                        <div className="hidden sm:block">
+                            <span className="text-2xl font-black tracking-tight text-slate-900">
+                                PACT
+                            </span>
+                            <div className="flex flex-col leading-none">
+                                <span className="text-[10px] text-slate-500 font-medium tracking-wider uppercase">Performance Analytics</span>
+                                <span className="text-[10px] text-slate-900 font-bold tracking-wider uppercase">Dept of AI&DS, SIET</span>
+                            </div>
                         </div>
-                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">
-                            PACT
-                        </span>
                     </div>
                     <Button variant="ghost" onClick={() => navigate('/')} className="text-slate-500 hover:text-slate-800">
-                        <ArrowLeft className="w-4 h-4 mr-2" /> Back
+                        <ArrowLeft className="w-4 h-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Back</span>
                     </Button>
                 </div>
             </nav>
 
             <motion.div
-                className="w-full px-8 pb-12 relative z-10"
+                className="w-full px-4 md:px-8 pb-12 relative z-10"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
             >
                 {/* Header Actions */}
-                <motion.div variants={itemVariants} className="flex justify-end gap-2 mb-6">
+                <motion.div variants={itemVariants} className="flex flex-wrap justify-end gap-2 mb-6">
                     <Button onClick={handleRefresh} disabled={refreshing} variant="outline" className="bg-white/50 backdrop-blur border-slate-200 hover:bg-white transition-all">
                         <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                         {refreshing ? 'Refreshing...' : 'Refresh Data'}
@@ -160,7 +166,7 @@ export default function StudentDetail() {
                 {/* Hero Profile Card */}
                 <motion.div variants={itemVariants} className="mb-8">
                     <Card className="glass-card overflow-hidden border-none bg-gradient-to-r from-white/80 to-white/40">
-                        <CardContent className="p-8 md:p-10">
+                        <CardContent className="p-6 md:p-10">
                             <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                                 <div className="text-center md:text-left">
                                     <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 tracking-tight mb-2">
@@ -194,7 +200,7 @@ export default function StudentDetail() {
 
                                 <div className="bg-white/50 p-6 rounded-2xl border border-white/50 text-center min-w-[200px] shadow-sm">
                                     <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Performance Score</div>
-                                    <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-violet-600 to-fuchsia-600">
+                                    <div className="text-4xl sm:text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-violet-600 to-fuchsia-600">
                                         {student.performanceScore}
                                     </div>
                                 </div>
@@ -204,7 +210,7 @@ export default function StudentDetail() {
                 </motion.div>
 
                 {/* Main Stats Grid */}
-                <div className="grid md:grid-cols-2 gap-8 mb-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8">
                     {/* LeetCode Section */}
                     <motion.div variants={itemVariants}>
                         <Card className="glass-card border-none h-full relative overflow-hidden group">
@@ -225,7 +231,7 @@ export default function StudentDetail() {
                                 </div>
 
                                 {/* Difficulty Grid */}
-                                <div className="grid grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     <div className="p-4 bg-emerald-50/50 rounded-2xl text-center border border-emerald-100 hover:scale-105 transition-transform">
                                         <div className="text-2xl font-bold text-emerald-600">{student.leetcodeStats.easySolved}</div>
                                         <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mt-1">Easy</div>
@@ -241,7 +247,7 @@ export default function StudentDetail() {
                                 </div>
 
                                 {/* Streaks & Rating */}
-                                <div className="grid grid-cols-3 gap-4">
+                                <div className="grid grid-cols-3 gap-2 sm:gap-4">
                                     <div className="bg-slate-50/50 p-3 rounded-xl text-center">
                                         <div className="text-xs text-slate-400 mb-1">Rating</div>
                                         <div className="font-bold text-slate-700">{student.leetcodeStats.contestRating || 'N/A'}</div>
@@ -256,7 +262,7 @@ export default function StudentDetail() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-4 pt-4 border-t border-slate-100">
+                                <div className="space-y-4 pt-4 border-t border-slate-100 min-w-0">
                                     <div className="text-sm font-bold text-slate-400 uppercase tracking-wider">Activity</div>
                                     <ActivityGraph
                                         type="leetcode"
@@ -264,7 +270,9 @@ export default function StudentDetail() {
                                         data={student.leetcodeStats.submissionCalendar}
                                         embedded={true}
                                     />
-                                    <TimelineGraph type="leetcode" data={student.leetcodeStats.submissionCalendar} />
+                                    <div className="w-full min-w-0">
+                                        <TimelineGraph type="leetcode" data={student.leetcodeStats.submissionCalendar} />
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
@@ -288,7 +296,7 @@ export default function StudentDetail() {
                                     <div className="text-sm font-semibold text-emerald-500 uppercase tracking-wide mt-1">Total Contributions</div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-3 sm:gap-4">
                                     <div className="p-5 bg-slate-50 rounded-2xl text-center border border-slate-100">
                                         <div className="text-3xl font-bold text-slate-700 mb-1">{student.githubStats.publicRepos}</div>
                                         <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Repositories</div>
@@ -311,14 +319,16 @@ export default function StudentDetail() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-4 pt-4 border-t border-slate-100">
+                                <div className="space-y-4 pt-4 border-t border-slate-100 min-w-0">
                                     <div className="text-sm font-bold text-slate-400 uppercase tracking-wider">Activity</div>
                                     <ActivityGraph
                                         type="github"
                                         username={student.githubUsername}
                                         embedded={true}
                                     />
-                                    <TimelineGraph type="github" username={student.githubUsername} />
+                                    <div className="w-full min-w-0">
+                                        <TimelineGraph type="github" username={student.githubUsername} />
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>

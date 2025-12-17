@@ -5,7 +5,8 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Trophy } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import Logo from '../components/Logo';
 
 export default function StudentForm() {
     const navigate = useNavigate();
@@ -62,21 +63,26 @@ export default function StudentForm() {
             </div>
 
             {/* Navbar */}
-            <nav className="sticky top-0 z-50 glass border-b border-white/20 px-8 py-4 mb-8">
-                <div className="w-full px-6 flex justify-between items-center">
+            <nav className="sticky top-0 z-50 glass border-b border-white/20 px-4 md:px-8 py-4 mb-8">
+                <div className="w-full px-2 md:px-6 flex justify-between items-center">
                     <div
-                        className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition"
+                        className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition"
                         onClick={() => navigate('/')}
                     >
-                        <div className="bg-gradient-to-r from-violet-600 to-fuchsia-600 p-2 rounded-lg text-white">
-                            <Trophy className="w-5 h-5" />
+                        <Logo className="w-10 h-10" />
+                        <div>
+                            <span className="text-2xl font-black tracking-tight text-slate-900">
+                                PACT
+                            </span>
+                            <div className="flex flex-col leading-none">
+                                <span className="text-[10px] text-slate-500 font-medium tracking-wider uppercase">Performance Analytics</span>
+                                <span className="text-[10px] text-slate-900 font-bold tracking-wider uppercase">Dept of AI&DS, SIET</span>
+                            </div>
                         </div>
-                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">
-                            PACT
-                        </span>
                     </div>
                     <Button variant="ghost" onClick={() => navigate('/')} className="text-slate-500 hover:text-slate-800">
-                        <ArrowLeft className="w-4 h-4 mr-2" /> Back
+                        <ArrowLeft className="w-4 h-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Back</span>
                     </Button>
                 </div>
             </nav>
@@ -121,7 +127,7 @@ export default function StudentForm() {
                                         onChange={handleChange}
                                         required
                                         placeholder="John Doe"
-                                        className="bg-white/50 border-slate-200 focus:border-violet-500 focus:ring-violet-500"
+                                        className="bg-white border-2 border-slate-300 focus:border-violet-600 focus:ring-violet-200"
                                     />
                                 </div>
 
@@ -135,11 +141,11 @@ export default function StudentForm() {
                                         onChange={handleChange}
                                         required
                                         placeholder="1MS21CS001"
-                                        className="bg-white/50 border-slate-200 focus:border-violet-500 focus:ring-violet-500"
+                                        className="bg-white border-2 border-slate-300 focus:border-violet-600 focus:ring-violet-200"
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium mb-1.5 text-slate-700">
                                             Section <span className="text-red-500">*</span>
@@ -150,7 +156,7 @@ export default function StudentForm() {
                                             onChange={handleChange}
                                             required
                                             placeholder="A"
-                                            className="bg-white/50 border-slate-200 focus:border-violet-500 focus:ring-violet-500"
+                                            className="bg-white border-2 border-slate-300 focus:border-violet-600 focus:ring-violet-200"
                                         />
                                     </div>
 
@@ -165,7 +171,7 @@ export default function StudentForm() {
                                             onChange={handleChange}
                                             required
                                             placeholder="2021"
-                                            className="bg-white/50 border-slate-200 focus:border-violet-500 focus:ring-violet-500"
+                                            className="bg-white border-2 border-slate-300 focus:border-violet-600 focus:ring-violet-200"
                                         />
                                     </div>
                                 </div>
@@ -187,7 +193,7 @@ export default function StudentForm() {
                                         value={formData.githubUsername}
                                         onChange={handleChange}
                                         placeholder="johndoe"
-                                        className="bg-white/50 border-slate-200 focus:border-violet-500 focus:ring-violet-500"
+                                        className="bg-white border-2 border-slate-300 focus:border-violet-600 focus:ring-violet-200"
                                     />
                                 </div>
 
@@ -200,7 +206,7 @@ export default function StudentForm() {
                                         value={formData.leetcodeUsername}
                                         onChange={handleChange}
                                         placeholder="johndoe"
-                                        className="bg-white/50 border-slate-200 focus:border-violet-500 focus:ring-violet-500"
+                                        className="bg-white border-2 border-slate-300 focus:border-violet-600 focus:ring-violet-200"
                                     />
                                 </div>
 
@@ -214,7 +220,7 @@ export default function StudentForm() {
                                         value={formData.linkedinUrl}
                                         onChange={handleChange}
                                         placeholder="https://www.linkedin.com/in/johndoe"
-                                        className="bg-white/50 border-slate-200 focus:border-violet-500 focus:ring-violet-500"
+                                        className="bg-white border-2 border-slate-300 focus:border-violet-600 focus:ring-violet-200"
                                     />
                                 </div>
                             </div>

@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../co
 import { Search, MoreVertical, Trophy, Users, Code2, Github, Download, Plus, Edit, Upload, RefreshCw, Zap, Flame, Medal } from 'lucide-react';
 import { Chart } from "react-google-charts";
 import TimelineGraph from '../components/TimelineGraph';
+import Logo from '../components/Logo';
 import { motion } from 'framer-motion';
 
 export default function Dashboard() {
@@ -303,13 +304,17 @@ export default function Dashboard() {
             {/* Navbar */}
             <nav className="sticky top-0 z-50 glass border-b border-white/20 px-4 md:px-8 py-4 mb-8">
                 <div className="w-full px-2 md:px-6 flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                        <div className="bg-gradient-to-r from-violet-600 to-fuchsia-600 p-2 rounded-lg text-white">
-                            <Trophy className="w-5 h-5" />
+                    <div className="flex items-center gap-3">
+                        <Logo className="w-10 h-10" />
+                        <div>
+                            <span className="text-2xl font-black tracking-tight text-slate-900">
+                                PACT
+                            </span>
+                            <div className="flex flex-col leading-none">
+                                <span className="text-[10px] text-slate-500 font-medium tracking-wider uppercase">Performance Analytics</span>
+                                <span className="text-[10px] text-slate-900 font-bold tracking-wider uppercase">Dept of AI&DS, SIET</span>
+                            </div>
                         </div>
-                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">
-                            PACT
-                        </span>
                     </div>
 
                     <div className="relative">
@@ -436,28 +441,25 @@ export default function Dashboard() {
 
                         {/* Activity Graph */}
                         <motion.div variants={itemVariants}>
-                            <Card className="glass-card h-80 overflow-hidden !border-slate-300 shadow-sm">
-                                <CardContent className="p-0 h-full relative pt-12">
-                                    <div className="absolute top-4 left-6 z-10">
-                                        <h3 className="font-semibold text-slate-700">Submission Trend</h3>
+                            <Card className="glass-card overflow-hidden !border-slate-300 shadow-sm">
+                                <CardContent className="p-6">
+                                    <h3 className="font-semibold text-slate-700 mb-4">Submission Trend</h3>
+                                    <div className="w-full h-40 md:h-64">
+                                        <TimelineGraph
+                                            type="leetcode"
+                                            data={kpiStats.lcAggregateCalendar}
+                                        />
                                     </div>
-                                    <TimelineGraph
-                                        type="leetcode"
-                                        data={kpiStats.lcAggregateCalendar}
-                                        height={320}
-                                    />
                                 </CardContent>
                             </Card>
                         </motion.div>
 
                         {/* Top Solvers Chart */}
                         <motion.div variants={itemVariants}>
-                            <Card className="glass-card h-80 !border-slate-300 shadow-sm">
-                                <CardContent className="p-4 h-full relative flex flex-col pt-12">
-                                    <div className="absolute top-4 left-6 z-10">
-                                        <h3 className="font-semibold text-slate-700">Top Solvers</h3>
-                                    </div>
-                                    <div className="flex-1">
+                            <Card className="glass-card !border-slate-300 shadow-sm">
+                                <CardContent className="p-6">
+                                    <h3 className="font-semibold text-slate-700 mb-4">Top Solvers</h3>
+                                    <div className="w-full h-40 md:h-64">
                                         <Chart
                                             chartType="Bar"
                                             data={[
@@ -470,6 +472,9 @@ export default function Dashboard() {
                                                 chartArea: { width: '80%', height: '70%' },
                                                 fontName: 'Outfit',
                                                 bars: 'vertical',
+                                                vAxis: {
+                                                    gridlines: { count: -1, interval: 10 }
+                                                }
                                             }}
                                             width={"100%"}
                                             height={"100%"}
@@ -538,28 +543,25 @@ export default function Dashboard() {
 
                         {/* Activity Graph */}
                         <motion.div variants={itemVariants}>
-                            <Card className="glass-card h-80 overflow-hidden !border-slate-300 shadow-sm">
-                                <CardContent className="p-0 h-full relative pt-12">
-                                    <div className="absolute top-4 left-6 z-10">
-                                        <h3 className="font-semibold text-slate-700">Contribution Trend</h3>
+                            <Card className="glass-card overflow-hidden !border-slate-300 shadow-sm">
+                                <CardContent className="p-6">
+                                    <h3 className="font-semibold text-slate-700 mb-4">Contribution Trend</h3>
+                                    <div className="w-full h-40 md:h-64">
+                                        <TimelineGraph
+                                            type="github"
+                                            data={kpiStats.ghAggregateCalendar}
+                                        />
                                     </div>
-                                    <TimelineGraph
-                                        type="github"
-                                        data={kpiStats.ghAggregateCalendar}
-                                        height={320}
-                                    />
                                 </CardContent>
                             </Card>
                         </motion.div>
 
                         {/* Top Contributors Chart */}
                         <motion.div variants={itemVariants}>
-                            <Card className="glass-card h-80 !border-slate-300 shadow-sm">
-                                <CardContent className="p-4 h-full relative flex flex-col pt-12">
-                                    <div className="absolute top-4 left-6 z-10">
-                                        <h3 className="font-semibold text-slate-700">Top Contributors</h3>
-                                    </div>
-                                    <div className="flex-1">
+                            <Card className="glass-card !border-slate-300 shadow-sm">
+                                <CardContent className="p-6">
+                                    <h3 className="font-semibold text-slate-700 mb-4">Top Contributors</h3>
+                                    <div className="w-full h-40 md:h-64">
                                         <Chart
                                             chartType="Bar"
                                             data={[
@@ -572,6 +574,9 @@ export default function Dashboard() {
                                                 chartArea: { width: '80%', height: '70%' },
                                                 fontName: 'Outfit',
                                                 bars: 'vertical',
+                                                vAxis: {
+                                                    gridlines: { count: -1, interval: 10 }
+                                                }
                                             }}
                                             width={"100%"}
                                             height={"100%"}

@@ -99,9 +99,9 @@ const TimelineGraph = ({ type, username, data }) => {
     const label = type === 'github' ? 'Contributions' : 'Questions';
 
     return (
-        <Card className="w-full bg-white/50 backdrop-blur border-none shadow-none">
-            <CardContent className="px-0">
-                <div className="h-[200px] w-full">
+        <Card className="w-full bg-white/50 backdrop-blur border-none shadow-none h-full">
+            <CardContent className="px-0 h-full pb-0">
+                <div className="h-full w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={graphData}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
