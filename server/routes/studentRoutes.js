@@ -3,7 +3,6 @@ const router = express.Router();
 const Student = require('../models/Student');
 const { fetchLeetCodeStats, verifyLeetCodeUsername } = require('../services/leetcodeService');
 const { fetchGitHubStats, verifyGitHubUsername } = require('../services/githubService');
-// HackerRank removed - unreliable scraping
 
 /**
  * GET /api/students
@@ -89,7 +88,6 @@ router.post('/', async (req, res) => {
             batch,
             githubUsername,
             leetcodeUsername,
-            hackerrankUsername,
             linkedinUrl
         } = req.body;
 
@@ -115,7 +113,7 @@ router.post('/', async (req, res) => {
             }
         }
 
-        // HackerRank validation removed - unreliable scraping
+
 
         if (validationErrors.length > 0) {
             return res.status(400).json({
@@ -132,7 +130,6 @@ router.post('/', async (req, res) => {
             batch,
             githubUsername,
             leetcodeUsername,
-            hackerrankUsername,
             linkedinUrl
         });
 
@@ -328,7 +325,7 @@ async function fetchStudentData(studentId) {
         }
     }
 
-    // HackerRank data fetching removed - unreliable scraping
+
 
     student.lastUpdated = new Date();
     await student.save();

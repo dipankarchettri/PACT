@@ -18,7 +18,6 @@ export default function StudentForm() {
         batch: new Date().getFullYear(),
         githubUsername: '',
         leetcodeUsername: '',
-        hackerrankUsername: '',
         linkedinUrl: ''
     });
 

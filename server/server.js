@@ -34,7 +34,7 @@ app.get('/api/health', (req, res) => {
 // Root endpoint
 app.get('/', (req, res) => {
     res.json({
-        message: 'EduStat API Server',
+        message: 'PACT API Server',
         version: '1.0.0',
         endpoints: {
             students: '/api/students',
@@ -50,7 +50,7 @@ app.use((err, req, res, next) => {
 });
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/edustat', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/pact', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })

@@ -1,7 +1,7 @@
 {
-  "name": "edustat",
+  "name": "pact-analytics",
   "version": "1.0.0",
-  "description": "Student Performance Tracker - Centralized dashboard for tracking student coding platform performance",
+  "description": "PACT - Performance Analytics & Code Tracker",
   "private": true,
   "workspaces": [
     "client",

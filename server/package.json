@@ -1,7 +1,7 @@
 {
-    "name": "edustat-server",
+    "name": "pact-server",
     "version": "1.0.0",
-    "description": "Backend API for EduStat Student Performance Tracker",
+    "description": "Backend API for PACT Student Performance Tracker",
     "main": "server.js",
     "scripts": {
         "start": "node server.js",

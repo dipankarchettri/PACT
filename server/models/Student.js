@@ -35,11 +35,6 @@ const studentSchema = new mongoose.Schema({
         trim: true,
         default: null
     },
-    hackerrankUsername: {
-        type: String,
-        trim: true,
-        default: null
-    },
     linkedinUrl: {
         type: String,
         trim: true,
@@ -73,12 +68,7 @@ const studentSchema = new mongoose.Schema({
         lastUpdated: { type: Date, default: null }
     },
 
-    hackerrankStats: {
-        badges: { type: [String], default: [] },
-        stars: { type: Map, of: Number, default: {} },
-        points: { type: Number, default: 0 },
-        lastUpdated: { type: Date, default: null }
-    },
+
 
     // Performance Metrics
     performanceScore: {
@@ -107,10 +97,7 @@ studentSchema.pre('save', function (next) {
     // GitHub Score: Contributions + Stars
     const githubScore = (this.githubStats.contributions * 0.2) + (this.githubStats.stars * 5);
 
-    // Legacy support (set to 0 since we removed HackerRank)
-    const hackerrankScore = 0;
-
-    this.performanceScore = Math.round(leetcodeScore + githubScore + hackerrankScore);
+    this.performanceScore = Math.round(leetcodeScore + githubScore);
     next();
 });
 

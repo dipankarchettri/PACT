@@ -13,7 +13,7 @@ async function calculateGitHubStreaks(username) {
             {
                 timeout: 15000,
                 headers: {
-                    'User-Agent': 'EduStat-Tracker'
+                    'User-Agent': 'PACT-Tracker'
                 }
             }
         );

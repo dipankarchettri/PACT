@@ -2,7 +2,7 @@ const cron = require('node-cron');
 const Student = require('../models/Student');
 const { fetchLeetCodeStats } = require('../services/leetcodeService');
 const { fetchGitHubStats } = require('../services/githubService');
-// HackerRank removed - unreliable scraping
+
 
 /**
  * Background worker to update all student data
@@ -70,7 +70,7 @@ async function updateStudentData(student) {
         }
     }
 
-    // HackerRank data fetching removed - unreliable scraping
+
 
     student.lastUpdated = new Date();
     await student.save();
