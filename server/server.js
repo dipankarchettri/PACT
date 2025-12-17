@@ -31,17 +31,27 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// Root endpoint
-app.get('/', (req, res) => {
-    res.json({
-        message: 'PACT API Server',
-        version: '1.0.0',
-        endpoints: {
-            students: '/api/students',
-            health: '/api/health'
-        }
+// Serve static assets in production
+if (process.env.NODE_ENV === 'production') {
+    const path = require('path');
+    app.use(express.static(path.join(__dirname, '../client/dist')));
+
+    app.get('*', (req, res) => {
+        res.sendFile(path.resolve(__dirname, '../client/dist', 'index.html'));
     });
-});
+} else {
+    // Root endpoint for development
+    app.get('/', (req, res) => {
+        res.json({
+            message: 'PACT API Server',
+            version: '1.0.0',
+            endpoints: {
+                students: '/api/students',
+                health: '/api/health'
+            }
+        });
+    });
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {

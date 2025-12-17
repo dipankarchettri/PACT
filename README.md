@@ -46,7 +46,7 @@ PACT is a centralized dashboard for educators to monitor student programming pro
 
 ```bash
 git clone https://github.com/dipankarchettri/PACT.git
-cd pact-analytics
+cd PACT
 ```
 
 2. **Install dependencies**
