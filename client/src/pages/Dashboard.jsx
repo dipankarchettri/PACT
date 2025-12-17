@@ -301,8 +301,8 @@ export default function Dashboard() {
             )}
 
             {/* Navbar */}
-            <nav className="sticky top-0 z-50 glass border-b border-white/20 px-8 py-4 mb-8">
-                <div className="w-full px-6 flex justify-between items-center">
+            <nav className="sticky top-0 z-50 glass border-b border-white/20 px-4 md:px-8 py-4 mb-8">
+                <div className="w-full px-2 md:px-6 flex justify-between items-center">
                     <div className="flex items-center gap-2">
                         <div className="bg-gradient-to-r from-violet-600 to-fuchsia-600 p-2 rounded-lg text-white">
                             <Trophy className="w-5 h-5" />
@@ -369,7 +369,7 @@ export default function Dashboard() {
             </nav>
 
             <motion.div
-                className="w-full px-8 pb-12 relative z-10"
+                className="w-full px-4 md:px-8 pb-12 relative z-10"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
@@ -403,7 +403,7 @@ export default function Dashboard() {
 
                         {/* Champions Row */}
                         {!loading && (
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                 <ChampionCard
                                     icon={Trophy}
                                     title="Most Solved"
@@ -505,7 +505,7 @@ export default function Dashboard() {
 
                         {/* Champions Row */}
                         {!loading && (
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                 <ChampionCard
                                     icon={Code2}
                                     title="Most Contribs"
@@ -608,7 +608,7 @@ export default function Dashboard() {
                                     ))}
                                 </select>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2">
                                 <Button
                                     variant="outline"
                                     onClick={handleRefreshData}
