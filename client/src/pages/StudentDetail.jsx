@@ -10,10 +10,14 @@ import { motion } from 'framer-motion';
 import ActivityGraph from '../components/ActivityGraph';
 import TimelineGraph from '../components/TimelineGraph';
 import Logo from '../components/Logo';
+import Badge from '../components/Badge';
+import LoadingScreen from '../components/LoadingScreen';
+import { useToast } from '../contexts/ToastContext';
 
 export default function StudentDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { addToast } = useToast();
     const [student, setStudent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -29,7 +33,7 @@ export default function StudentDetail() {
             setStudent(response.data);
         } catch (error) {
             console.error('Error fetching student:', error);
-            alert('Failed to fetch student details');
+            addToast('Failed to fetch student details', 'error');
         } finally {
             setLoading(false);
         }
@@ -40,10 +44,10 @@ export default function StudentDetail() {
         try {
             const response = await studentAPI.refresh(id);
             setStudent(response.data);
-            alert('Student data refreshed successfully!');
+            addToast('Student data refreshed successfully!', 'success');
         } catch (error) {
             console.error('Error refreshing student:', error);
-            alert('Failed to refresh student data');
+            addToast('Failed to refresh student data', 'error');
         } finally {
             setRefreshing(false);
         }
@@ -70,14 +74,7 @@ export default function StudentDetail() {
     };
 
     if (loading) {
-        return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-                <div className="text-slate-600 text-center">
-                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500"></div>
-                    <p className="mt-4 font-medium">Loading details...</p>
-                </div>
-            </div>
-        );
+        return <LoadingScreen />;
     }
 
     if (!student) {
@@ -146,22 +143,21 @@ export default function StudentDetail() {
                 <motion.div variants={itemVariants} className="mb-6">
                     <Card className="glass-card overflow-hidden !border-slate-300 shadow-sm bg-gradient-to-r from-white/80 to-white/40">
                         <CardContent className="p-4 md:p-6">
-                            <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-4">
-                                <div className="flex-1 text-center md:text-left">
-                                    {/* Name and Badges Row */}
-                                    <div className="flex flex-col md:flex-row items-center gap-3 mb-2">
-                                        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                                {/* Col 1: Name & Info (5 cols) */}
+                                <div className="lg:col-span-5 text-center lg:text-left">
+                                    <div className="flex flex-col lg:flex-row items-center gap-3 mb-2">
+                                        <h1 className="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">
                                             {student.name}
                                         </h1>
-                                        <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                                            <span className="bg-slate-100 px-2 py-0.5 rounded text-xs border border-slate-200 text-slate-600 font-medium">{student.usn}</span>
-                                            <span className="bg-slate-100 px-2 py-0.5 rounded text-xs border border-slate-200 text-slate-600 font-medium">{student.section}</span>
-                                            <span className="bg-slate-100 px-2 py-0.5 rounded text-xs border border-slate-200 text-slate-600 font-medium">{student.batch}</span>
+                                        <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
+                                            <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-bold tracking-wide">{student.usn}</span>
+                                            <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-bold tracking-wide">{student.section}</span>
+                                            <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-bold tracking-wide">{student.batch}</span>
                                         </div>
                                     </div>
 
-                                    {/* Contact and Socials Row */}
-                                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-2 text-slate-500 text-xs">
+                                    <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-4 gap-y-2 text-slate-500 text-xs font-medium mb-1">
                                         {student.email && (
                                             <div className="flex items-center gap-1.5">
                                                 <Mail className="w-3.5 h-3.5" />
@@ -174,35 +170,47 @@ export default function StudentDetail() {
                                                 <span>{student.phoneNumber}</span>
                                             </div>
                                         )}
-                                        
-                                        {/* Divider (only visible on md up if both contact and socials exist) */}
-                                        <div className="hidden md:block w-px h-3 bg-slate-300 mx-1"></div>
+                                    </div>
 
-                                        <div className="flex gap-2">
-                                            {student.githubUsername && (
-                                                <a href={`https://github.com/${student.githubUsername}`} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-slate-900 transition-colors">
-                                                    <Github className="w-4 h-4" />
-                                                </a>
-                                            )}
-                                            {student.leetcodeUsername && (
-                                                <a href={`https://leetcode.com/${student.leetcodeUsername}`} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-orange-500 transition-colors">
-                                                    <Code2 className="w-4 h-4" />
-                                                </a>
-                                            )}
-                                            {student.linkedinUrl && (
-                                                <a href={student.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-600 transition-colors">
-                                                    <Linkedin className="w-4 h-4" />
-                                                </a>
-                                            )}
-                                        </div>
+                                    <div className="flex items-center justify-center lg:justify-start gap-4 mt-3">
+                                        {student.githubUsername && (
+                                            <a href={`https://github.com/${student.githubUsername}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full text-slate-400 hover:text-slate-900 border border-slate-200 shadow-sm transition-all hover:scale-110">
+                                                <Github className="w-4 h-4" />
+                                            </a>
+                                        )}
+                                        {student.leetcodeUsername && (
+                                            <a href={`https://leetcode.com/${student.leetcodeUsername}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full text-slate-400 hover:text-orange-500 border border-slate-200 shadow-sm transition-all hover:scale-110">
+                                                <Code2 className="w-4 h-4" />
+                                            </a>
+                                        )}
+                                        {student.linkedinUrl && (
+                                            <a href={student.linkedinUrl} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full text-slate-400 hover:text-blue-600 border border-slate-200 shadow-sm transition-all hover:scale-110">
+                                                <Linkedin className="w-4 h-4" />
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
 
-                                {/* Compact Score Card */}
-                                <div className="bg-white/50 p-2 px-4 rounded-xl border border-slate-300 shadow-sm text-center min-w-[100px]">
-                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Score</div>
-                                    <div className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-br from-violet-600 to-fuchsia-600 leading-none">
-                                        {student.performanceScore}
+                                {/* Col 2: Badges (4 cols) - Centered */}
+                                <div className="lg:col-span-4 flex flex-col items-center justify-center">
+                                    {student.badges && student.badges.length > 0 ? (
+                                        <div className="flex flex-wrap gap-2 justify-center">
+                                            {student.badges.map((badge, index) => (
+                                                <Badge key={index} type={badge} />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-slate-400 text-xs italic">No badges earned yet</div>
+                                    )}
+                                </div>
+
+                                {/* Col 3: Score (3 cols) - Right aligned */}
+                                <div className="lg:col-span-3 flex justify-center lg:justify-end">
+                                    <div className="bg-white/60 backdrop-blur-sm p-3 px-6 rounded-2xl border border-slate-200 shadow-sm text-center min-w-[140px]">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Performance Score</div>
+                                        <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-violet-600 to-fuchsia-600 leading-none tracking-tighter">
+                                            {student.performanceScore}
+                                        </div>
                                     </div>
                                 </div>
                             </div>

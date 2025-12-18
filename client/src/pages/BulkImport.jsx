@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
 import Papa from 'papaparse';
@@ -18,30 +18,23 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
 import { studentAPI } from '../lib/apiClient';
+import { useToast } from '../contexts/ToastContext';
+
+import { useAdmin } from '../contexts/AdminContext';
 
 export default function BulkImport() {
     const navigate = useNavigate();
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [file, setFile] = useState(null);
-    const [parsedData, setParsedData] = useState([]);
-    const [importing, setImporting] = useState(false);
-
-    // Global defaults for missing fields
-    const [globalBatch, setGlobalBatch] = useState(new Date().getFullYear());
-    const [globalSection, setGlobalSection] = useState('A');
-
-    // Password Protection Logic
-    const handleLogin = (e) => {
-        e.preventDefault();
-        if (password === 'admin') {
-            setIsAuthenticated(true);
-            setError('');
-        } else {
-            setError('Incorrect password');
+    const { isAdmin } = useAdmin();
+    const { addToast } = useToast();
+    
+    // Redirect if not admin
+    useEffect(() => {
+        if (!isAdmin) {
+            navigate('/admin');
         }
-    };
+    }, [isAdmin, navigate]);
+
+    const [file, setFile] = useState(null);
 
     // File Upload Logic
     const onDrop = (acceptedFiles) => {
@@ -132,52 +125,12 @@ export default function BulkImport() {
             }
         }
         setImporting(false);
+        addToast('Bulk save operation completed', 'info');
     };
 
-    if (!isAuthenticated) {
-        return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-                <div className="fixed inset-0 z-0 opacity-30 pointer-events-none">
-                    <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-200 rounded-full blur-[100px]"></div>
-                    <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-sky-200 rounded-full blur-[100px]"></div>
-                </div>
-
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="relative z-10 w-full max-w-md"
-                >
-                    <Card className="glass-card border-none">
-                        <CardHeader className="text-center">
-                            <div className="mx-auto bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                                <Lock className="w-8 h-8 text-slate-500" />
-                            </div>
-                            <CardTitle className="text-2xl">Admin Access</CardTitle>
-                            <CardDescription>Enter password to access bulk import</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <form onSubmit={handleLogin} className="space-y-4">
-                                <Input
-                                    type="password"
-                                    placeholder="Enter password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="bg-white/50 text-center text-lg tracking-widest"
-                                />
-                                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-                                <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800">
-                                    Unlock Access
-                                </Button>
-                                <Button variant="ghost" type="button" onClick={() => navigate('/')} className="w-full">
-                                    Cancel
-                                </Button>
-                            </form>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-            </div>
-        );
-    }
+    // Global defaults for missing fields
+    const [globalBatch, setGlobalBatch] = useState(new Date().getFullYear());
+    const [globalSection, setGlobalSection] = useState('A');
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans relative">
@@ -199,9 +152,9 @@ export default function BulkImport() {
                         </div>
                         <span className="hidden sm:inline text-slate-400 font-medium ml-2 self-center pt-1">| Bulk Import</span>
                     </div>
-                    <Button variant="ghost" onClick={() => navigate('/')} className="text-slate-500 hover:text-slate-800">
+                    <Button variant="ghost" onClick={() => navigate('/admin')} className="text-slate-500 hover:text-slate-800">
                         <ArrowLeft className="w-4 h-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Back to Dashboard</span>
+                        <span className="hidden sm:inline">Back</span>
                     </Button>
                 </div>
             </nav>

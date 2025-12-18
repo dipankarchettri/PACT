@@ -68,6 +68,12 @@ const studentSchema = new mongoose.Schema({
         lastUpdated: { type: Date, default: null }
     },
 
+    // Gamification
+    badges: [{
+        type: String,
+        enum: ['Top Solver', 'Streak Master', 'Open Source Hero', 'Open Source Enthusiast', 'Problem Solver']
+    }],
+
 
 
     // Performance Metrics
@@ -98,6 +104,37 @@ studentSchema.pre('save', function (next) {
     const githubScore = (this.githubStats.contributions * 0.2) + (this.githubStats.stars * 5);
 
     this.performanceScore = Math.round(leetcodeScore + githubScore);
+
+    // Calculate Badges (Regenerate from scratch to ensure accuracy)
+    const newBadges = new Set();
+
+    // 1. Top Solver: 100+ LeetCode problems
+    if (this.leetcodeStats.totalSolved >= 100) {
+        newBadges.add('Top Solver');
+    }
+
+    // 1b. Problem Solver: 50+ LeetCode problems
+    if (this.leetcodeStats.totalSolved >= 50) {
+        newBadges.add('Problem Solver');
+    }
+
+    // 2. Streak Master: 30+ days streak (LeetCode or GitHub)
+    if (this.leetcodeStats.currentStreak >= 30 || (this.githubStats && this.githubStats.currentStreak >= 30)) {
+        newBadges.add('Streak Master');
+    }
+
+    // 3. Open Source Hero: 500+ GitHub contributions
+    if (this.githubStats && this.githubStats.contributions >= 500) {
+        newBadges.add('Open Source Hero');
+    }
+
+    // 4. Open Source Enthusiast: 300+ GitHub contributions
+    if (this.githubStats && this.githubStats.contributions >= 300) {
+        newBadges.add('Open Source Enthusiast');
+    }
+
+    this.badges = Array.from(newBadges);
+
     next();
 });
 

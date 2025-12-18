@@ -10,9 +10,12 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Cartes
 import TimelineGraph from '../components/TimelineGraph';
 import Logo from '../components/Logo';
 import { motion } from 'framer-motion';
+import LoadingScreen from '../components/LoadingScreen';
+import { useToast } from '../contexts/ToastContext';
 
 export default function Dashboard() {
     const navigate = useNavigate();
+    const { addToast } = useToast();
 
     // Core Data State
     const [students, setStudents] = useState([]);
@@ -36,12 +39,6 @@ export default function Dashboard() {
 
     const [refreshing, setRefreshing] = useState(false);
 
-    // Admin State
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [showLoginModal, setShowLoginModal] = useState(false);
-    const [password, setPassword] = useState('');
-    const [loginError, setLoginError] = useState('');
-    const [showAdminMenu, setShowAdminMenu] = useState(false);
 
     // Sorting State
     const [sortConfig, setSortConfig] = useState({ key: 'score', direction: 'desc' });
@@ -51,9 +48,9 @@ export default function Dashboard() {
         fetchStudents();
     }, [selectedBatch]); // Refetch when batch changes
 
-    const fetchStudents = async () => {
+    const fetchStudents = async (showFullLoader = true) => {
         try {
-            setLoading(true);
+            if (showFullLoader) setLoading(true);
             const params = {
                 ...(selectedBatch !== 'All' && { batch: selectedBatch }),
                 ...(search && { search }),
@@ -64,8 +61,9 @@ export default function Dashboard() {
             calculateKPIs(data);
         } catch (error) {
             console.error("Failed to fetch students:", error);
+            if (!showFullLoader) addToast("Failed to update data", "error");
         } finally {
-            setLoading(false);
+            if (showFullLoader) setLoading(false);
         }
     };
 
@@ -183,9 +181,11 @@ export default function Dashboard() {
         setRefreshing(true);
         try {
             await axios.post('http://localhost:5000/api/students/refresh-all');
-            await fetchStudents();
+            await fetchStudents(false);
+            addToast('Data refreshed successfully', 'success');
         } catch (error) {
             console.error('Error refreshing data:', error);
+            addToast('Failed to refresh data', 'error');
         } finally {
             setRefreshing(false);
         }
@@ -193,7 +193,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            fetchStudents();
+            fetchStudents(false);
         }, 500);
         return () => clearTimeout(timer);
     }, [search]);
@@ -299,6 +299,10 @@ export default function Dashboard() {
         </Card>
     );
 
+    if (loading) {
+        return <LoadingScreen />;
+    }
+
     return (
         <div className="min-h-screen bg-slate-50 relative overflow-hidden font-sans">
             <div className="fixed inset-0 z-0 opacity-40 pointer-events-none">
@@ -306,43 +310,6 @@ export default function Dashboard() {
                 <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-sky-300 rounded-full blur-[100px] animate-pulse delay-1000"></div>
             </div>
 
-            {/* Admin Login Modal */}
-            {showLoginModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-                    <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="w-full max-w-sm"
-                    >
-                        <Card className="glass-card shadow-2xl">
-                            <CardHeader className="text-center pb-2">
-                                <div className="mx-auto w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                                    <Trophy className="w-6 h-6 text-slate-800" />
-                                </div>
-                                <CardTitle className="text-xl">Admin Access</CardTitle>
-                                <CardDescription>Enter password to manage students</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <form onSubmit={handleAdminLogin} className="space-y-4">
-                                    <Input
-                                        type="password"
-                                        placeholder="Enter Password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="text-center tracking-widest bg-white/50"
-                                        autoFocus
-                                    />
-                                    {loginError && <p className="text-red-500 text-xs text-center font-medium">{loginError}</p>}
-                                    <div className="flex gap-2">
-                                        <Button type="button" variant="outline" className="flex-1" onClick={() => setShowLoginModal(false)}>Cancel</Button>
-                                        <Button type="submit" className="flex-1 bg-slate-900 text-white hover:bg-slate-800">Login</Button>
-                                    </div>
-                                </form>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                </div>
-            )}
 
             {/* Navbar */}
             <nav className="sticky top-0 z-50 glass border-b border-white/20 px-4 md:px-8 py-4 mb-8">
@@ -361,57 +328,13 @@ export default function Dashboard() {
                     </div>
 
                     <div className="relative">
-                        {!isAdmin ? (
-                            <Button
-                                variant="outline"
-                                onClick={() => setShowLoginModal(true)}
-                                className="rounded-full border-slate-200 text-slate-600 hover:bg-white hover:text-slate-900 bg-white/50 h-8 px-3 text-xs md:h-10 md:px-4 md:text-sm"
-                            >
-                                Admin Dashboard
-                            </Button>
-                        ) : (
-                            <div className="relative">
-                                <Button
-                                    onClick={() => setShowAdminMenu(!showAdminMenu)}
-                                    className="rounded-full bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-violet-200 h-8 px-3 text-xs md:h-10 md:px-4 md:text-sm"
-                                >
-                                    Admin Controls {showAdminMenu ? '▲' : '▼'}
-                                </Button>
-                                {showAdminMenu && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 p-2 z-50 overflow-hidden"
-                                    >
-                                        <div
-                                            className="flex items-center gap-2 p-2 hover:bg-slate-50 rounded-lg cursor-pointer text-sm font-medium text-slate-700 transition"
-                                            onClick={() => { navigate('/add-student'); setShowAdminMenu(false); }}
-                                        >
-                                            <Plus className="w-4 h-4 text-violet-600" /> Add Student
-                                        </div>
-                                        <div
-                                            className="flex items-center gap-2 p-2 hover:bg-slate-50 rounded-lg cursor-pointer text-sm font-medium text-slate-700 transition"
-                                            onClick={() => { navigate('/admin/students'); setShowAdminMenu(false); }}
-                                        >
-                                            <Edit className="w-4 h-4 text-emerald-600" /> Manage Students
-                                        </div>
-                                        <div
-                                            className="flex items-center gap-2 p-2 hover:bg-slate-50 rounded-lg cursor-pointer text-sm font-medium text-slate-700 transition"
-                                            onClick={() => { navigate('/bulk-import'); setShowAdminMenu(false); }}
-                                        >
-                                            <Upload className="w-4 h-4 text-orange-600" /> Bulk Import
-                                        </div>
-                                        <div className="h-px bg-slate-100 my-1"></div>
-                                        <div
-                                            className="flex items-center gap-2 p-2 hover:bg-red-50 rounded-lg cursor-pointer text-sm font-medium text-red-600 transition"
-                                            onClick={() => { setIsAdmin(false); setShowAdminMenu(false); }}
-                                        >
-                                            <Users className="w-4 h-4" /> Logout
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </div>
-                        )}
+                        <Button
+                            variant="outline"
+                            onClick={() => navigate('/admin')}
+                            className="rounded-full border-slate-200 text-slate-600 hover:bg-white hover:text-slate-900 bg-white/50 h-8 px-3 text-xs md:h-10 md:px-4 md:text-sm"
+                        >
+                            Admin Dashboard
+                        </Button>
                     </div>
                 </div>
             </nav>
@@ -463,7 +386,7 @@ export default function Dashboard() {
                                 />
                                 <ChampionCard
                                     icon={Flame}
-                                    title="Longest"
+                                    title="Longest Streak"
                                     name={kpiStats.champions.lc.longest.name}
                                     value={kpiStats.champions.lc.longest.val}
                                     subLabel="days"
@@ -472,7 +395,7 @@ export default function Dashboard() {
                                 />
                                 <ChampionCard
                                     icon={Zap}
-                                    title="Current"
+                                    title="Current Longest"
                                     name={kpiStats.champions.lc.streak.name}
                                     value={kpiStats.champions.lc.streak.val}
                                     subLabel="days"
@@ -583,7 +506,7 @@ export default function Dashboard() {
                                 />
                                 <ChampionCard
                                     icon={Zap}
-                                    title="Current Streak"
+                                    title="Current Longest"
                                     name={kpiStats.champions.gh.streak.name}
                                     value={kpiStats.champions.gh.streak.val}
                                     subLabel="days"
@@ -692,36 +615,40 @@ export default function Dashboard() {
 
 
                         <div className="overflow-x-auto px-4 md:px-8">
-                            <table className="w-full border-separate border-spacing-y-3">
+                            <table className="w-full border-separate border-spacing-y-2 md:border-spacing-y-3">
                                 <thead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                     <tr>
-                                        <th className="text-left p-2 pl-3 md:p-4 md:pl-6 text-[10px] md:text-xs">Student Info</th>
+                                        <th className="text-left py-2 pl-2 pr-1 md:p-4 md:pl-6 text-[10px] md:text-xs">Student</th>
                                         <th className="hidden md:table-cell text-center p-4">Cohort</th>
                                         <th 
-                                            className="text-center p-2 md:p-4 text-[10px] md:text-xs cursor-pointer hover:bg-slate-50 transition select-none group"
+                                            className="text-center py-2 px-1 md:p-4 text-[10px] md:text-xs cursor-pointer hover:bg-slate-50 transition select-none group"
                                             onClick={() => requestSort('leetcode')}
                                         >
                                             <div className="flex items-center justify-center gap-1">
-                                                LeetCode <SortIcon columnKey="leetcode" />
+                                                <span className="md:hidden">LC</span>
+                                                <span className="hidden md:inline">LeetCode</span>
+                                                <SortIcon columnKey="leetcode" />
                                             </div>
                                         </th>
                                         <th 
-                                            className="text-center p-2 md:p-4 text-[10px] md:text-xs cursor-pointer hover:bg-slate-50 transition select-none group"
+                                            className="text-center py-2 px-1 md:p-4 text-[10px] md:text-xs cursor-pointer hover:bg-slate-50 transition select-none group"
                                             onClick={() => requestSort('github')}
                                         >
                                             <div className="flex items-center justify-center gap-1">
-                                                GitHub <SortIcon columnKey="github" />
+                                                <span className="md:hidden">GH</span>
+                                                <span className="hidden md:inline">GitHub</span>
+                                                <SortIcon columnKey="github" />
                                             </div>
                                         </th>
                                         <th 
-                                            className="text-center p-2 md:p-4 text-[10px] md:text-xs cursor-pointer hover:bg-slate-50 transition select-none group"
+                                            className="text-center py-2 px-1 md:p-4 text-[10px] md:text-xs cursor-pointer hover:bg-slate-50 transition select-none group"
                                             onClick={() => requestSort('score')}
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 Score <SortIcon columnKey="score" />
                                             </div>
                                         </th>
-                                        <th className="text-center p-2 pr-3 md:p-4 md:pr-6 text-[10px] md:text-xs">Action</th>
+                                        <th className="text-center py-2 pr-2 pl-1 md:p-4 md:pr-6 text-[10px] md:text-xs">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -731,8 +658,8 @@ export default function Dashboard() {
                                         const isThird = kpiStats.top3Ids[2] === student._id;
 
                                         let baseClass = "transition-colors duration-200 border-y py-2 md:py-4";
-                                        let leftClass = "border-l rounded-l-xl pl-3 md:pl-6";
-                                        let rightClass = "border-r rounded-r-xl pr-3 md:pr-6";
+                                        let leftClass = "border-l rounded-l-xl pl-2 md:pl-6";
+                                        let rightClass = "border-r rounded-r-xl pr-2 md:pr-6";
                                         
                                         if (isFirst) {
                                             const colorClass = " bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-300";
@@ -759,13 +686,14 @@ export default function Dashboard() {
                                         return (
                                             <motion.tr
                                                 key={student._id}
-                                                whileHover={{ scale: 1.01 }}
-                                                className="drop-shadow-sm hover:drop-shadow-md transition-all"
+                                                whileHover={{ scale: 1.01, backgroundColor: "rgba(248, 250, 252, 0.8)" }}
+                                                onClick={() => navigate(`/student/${student._id}`)}
+                                                className="drop-shadow-sm hover:drop-shadow-md transition-all cursor-pointer group"
                                             >
                                                 <td className={`${baseClass} ${leftClass}`}>
                                                     <div className="flex items-center gap-2 md:gap-3">
                                                         <div>
-                                                            <div className="font-bold text-slate-800 text-xs md:text-sm">{student.name}</div>
+                                                            <div className="font-bold text-slate-800 text-xs md:text-sm max-w-[80px] md:max-w-none truncate group-hover:text-violet-700 transition-colors">{student.name}</div>
                                                             <div className="text-[10px] text-slate-400 font-mono hidden sm:block">{student.usn}</div>
                                                         </div>
                                                     </div>
@@ -777,27 +705,28 @@ export default function Dashboard() {
                                                 </td>
                                                 <td className={`${baseClass} text-center`}>
                                                     <div className="flex flex-col items-center">
-                                                        <span className="font-bold text-orange-600 text-sm md:text-base">{student.leetcodeStats?.totalSolved || 0}</span>
+                                                        <span className="font-bold text-orange-600 text-xs md:text-base">{student.leetcodeStats?.totalSolved || 0}</span>
                                                         <span className="text-[8px] md:text-[10px] text-slate-400 uppercase">Solved</span>
                                                     </div>
                                                 </td>
                                                 <td className={`${baseClass} text-center`}>
                                                     <div className="flex flex-col items-center">
-                                                        <span className="font-bold text-emerald-600 text-sm md:text-base">{student.githubStats?.totalCommits || 0}</span>
+                                                        <span className="font-bold text-emerald-600 text-xs md:text-base">{student.githubStats?.totalCommits || 0}</span>
                                                         <span className="text-[8px] md:text-[10px] text-slate-400 uppercase">Contribs</span>
                                                     </div>
                                                 </td>
                                                 <td className={`${baseClass} text-center`}>
-                                                    <div className="font-bold text-violet-600 text-sm md:text-lg">{student.performanceScore}</div>
+                                                    <div className="font-bold text-violet-600 text-xs md:text-lg">{student.performanceScore}</div>
                                                 </td>
                                                 <td className={`${baseClass} ${rightClass} text-center`}>
                                                     <Button
                                                         size="sm"
                                                         variant="ghost"
-                                                        onClick={() => navigate(`/student/${student._id}`)}
-                                                        className="text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-full"
+                                                        onClick={(e) => { e.stopPropagation(); navigate(`/student/${student._id}`); }}
+                                                        className="text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-full h-7 w-7 p-0 md:h-9 md:w-auto md:px-3"
                                                     >
-                                                        View
+                                                        <span className="block md:hidden">➜</span>
+                                                        <span className="hidden md:block">View</span>
                                                     </Button>
                                                 </td>
                                             </motion.tr>

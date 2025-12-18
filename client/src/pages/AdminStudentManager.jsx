@@ -18,40 +18,34 @@ import { Input } from '../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
 import { studentAPI } from '../lib/apiClient';
 import Logo from '../components/Logo';
+import LoadingScreen from '../components/LoadingScreen';
+import { useToast } from '../contexts/ToastContext';
+
+import { useAdmin } from '../contexts/AdminContext';
 
 export default function AdminStudentManager() {
     const navigate = useNavigate();
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+    const { isAdmin } = useAdmin();
+    const { addToast } = useToast();
+    
+    // Redirect if not admin
+    useEffect(() => {
+        if (!isAdmin) {
+            navigate('/admin');
+        } else {
+            fetchStudents();
+        }
+    }, [isAdmin, navigate]);
 
     const [students, setStudents] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
     const [savingId, setSavingId] = useState(null);
-    
-    // Delete Modal State
-    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-    const [studentToDelete, setStudentToDelete] = useState(null);
-    const [deleteConfirmationCode, setDeleteConfirmationCode] = useState('');
-    const [deleteInput, setDeleteInput] = useState('');
-    const [isDeleting, setIsDeleting] = useState(false);
-
-    // Edit Modal State (Mobile)
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editingStudent, setEditingStudent] = useState(null);
-
-    // Password Protection
-    const handleLogin = (e) => {
-        e.preventDefault();
-        if (password === 'admin') {
-            setIsAuthenticated(true);
-            setError('');
-            fetchStudents();
-        } else {
-            setError('Incorrect password');
-        }
-    };
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [studentToDelete, setStudentToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const fetchStudents = async () => {
         try {
@@ -120,16 +114,10 @@ export default function AdminStudentManager() {
 
     const handleDeleteClick = (student) => {
         setStudentToDelete(student);
-        // Generate random 4-character code (uppercase alphanumeric)
-        const code = Math.random().toString(36).substring(2, 6).toUpperCase();
-        setDeleteConfirmationCode(code);
-        setDeleteInput('');
         setDeleteModalOpen(true);
     };
 
     const handleDeleteConfirm = async () => {
-        if (deleteInput !== deleteConfirmationCode) return;
-        
         setIsDeleting(true);
         try {
             await studentAPI.delete(studentToDelete._id);
@@ -137,9 +125,10 @@ export default function AdminStudentManager() {
             setStudents(prev => prev.filter(s => s._id !== studentToDelete._id));
             setDeleteModalOpen(false);
             setStudentToDelete(null);
+            addToast('Student deleted successfully', 'success');
         } catch (error) {
             console.error(error);
-            alert("Failed to delete student");
+            addToast("Failed to delete student", 'error');
         } finally {
             setIsDeleting(false);
         }
@@ -171,50 +160,9 @@ export default function AdminStudentManager() {
         s.usn.toLowerCase().includes(search.toLowerCase())
     );
 
-    if (!isAuthenticated) {
-        return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
-                <div className="fixed inset-0 z-0 opacity-30 pointer-events-none">
-                    <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-200 rounded-full blur-[100px]"></div>
-                    <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-sky-200 rounded-full blur-[100px]"></div>
-                </div>
 
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="relative z-10 w-full max-w-md"
-                >
-                    <Card className="glass-card border-none shadow-2xl">
-                        <CardHeader className="text-center">
-                            <div className="mx-auto bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                                <Lock className="w-8 h-8 text-slate-500" />
-                            </div>
-                            <CardTitle className="text-2xl">Admin Verify</CardTitle>
-                            <CardDescription>Enter password to manage student data</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <form onSubmit={handleLogin} className="space-y-4">
-                                <Input
-                                    type="password"
-                                    placeholder="Enter password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="bg-white/50 text-center text-lg tracking-widest"
-                                    autoFocus
-                                />
-                                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-                                <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800">
-                                    Unlock Manager
-                                </Button>
-                                <Button variant="ghost" type="button" onClick={() => navigate('/')} className="w-full">
-                                    Cancel
-                                </Button>
-                            </form>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-            </div>
-        );
+    if (loading) {
+        return <LoadingScreen />;
     }
 
     return (
@@ -237,9 +185,9 @@ export default function AdminStudentManager() {
                         </div>
                         <span className="hidden sm:inline text-slate-400 font-medium ml-2 self-center pt-1">| Student Manager</span>
                     </div>
-                    <Button variant="ghost" onClick={() => navigate('/')} className="text-slate-500 hover:text-slate-800">
+                    <Button variant="ghost" onClick={() => navigate('/admin')} className="text-slate-500 hover:text-slate-800">
                         <ArrowLeft className="w-4 h-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Back to Dashboard</span>
+                        <span className="hidden sm:inline">Back</span>
                     </Button>
                 </div>
             </nav>
@@ -269,13 +217,8 @@ export default function AdminStudentManager() {
 
                     {/* Table */}
                     <div className="overflow-x-auto h-[calc(100vh-250px)]">
-                        {loading ? (
-                            <div className="flex items-center justify-center h-64">
-                                <Loader2 className="w-8 h-8 animate-spin text-violet-600" />
-                            </div>
-                        ) : (
-                            <table className="w-full text-sm">
-                                <thead className="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+                        <table className="w-full text-sm">
+                            <thead className="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
                                     <tr>
                                         <th className="p-4 text-left font-semibold text-slate-600 w-64">Student Info</th>
                                         <th className="hidden md:table-cell p-4 text-left font-semibold text-slate-600 w-24">Batch</th>
@@ -401,9 +344,8 @@ export default function AdminStudentManager() {
                                             </td>
                                         </tr>
                                     ))}
-                                </tbody>
-                            </table>
-                        )}
+                            </tbody>
+                        </table>
                     </div>
 
                     {/* Edit Modal (Mobile Only) */}
@@ -541,20 +483,7 @@ export default function AdminStudentManager() {
                                         This action cannot be undone.
                                     </p>
                                     
-                                    <div className="bg-slate-100 p-3 rounded-lg text-center">
-                                        <p className="text-xs text-slate-500 mb-1">Type this code to confirm:</p>
-                                        <p className="font-mono text-lg font-bold tracking-widest text-slate-800 select-all">{deleteConfirmationCode}</p>
-                                    </div>
-
-                                    <Input
-                                        value={deleteInput}
-                                        onChange={(e) => setDeleteInput(e.target.value.toUpperCase())}
-                                        placeholder="Enter code"
-                                        className="text-center font-mono tracking-widest uppercase"
-                                        autoFocus
-                                    />
-
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-2 pt-4">
                                         <Button 
                                             variant="ghost" 
                                             onClick={() => setDeleteModalOpen(false)}
@@ -564,7 +493,7 @@ export default function AdminStudentManager() {
                                         </Button>
                                         <Button 
                                             onClick={handleDeleteConfirm}
-                                            disabled={deleteInput !== deleteConfirmationCode || isDeleting}
+                                            disabled={isDeleting}
                                             className="flex-1 bg-red-600 hover:bg-red-700 text-white"
                                         >
                                             {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Delete Student'}
