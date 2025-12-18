@@ -735,6 +735,19 @@ export default function Dashboard() {
                                 </tbody>
                             </table>
                         </div>
+                        
+                        {/* Self-Service Update Link */}
+                        <div className="p-4 border-t border-slate-100 bg-slate-50/50 text-center">
+                            <p className="text-sm text-slate-500 mb-3">Don't see your updated stats? Make sure your links are correct.</p>
+                            <Button 
+                                variant="outline" 
+                                onClick={() => navigate('/update-profile')}
+                                className="bg-white hover:bg-violet-50 text-violet-600 border-violet-200 hover:border-violet-300 transition-colors rounded-full"
+                            >
+                                <Edit className="w-4 h-4 mr-2" />
+                                Fill Your Information
+                            </Button>
+                        </div>
                     </Card>
                 </motion.div>
             </motion.div>
