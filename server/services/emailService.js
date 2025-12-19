@@ -3,11 +3,17 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
-    secure: true, // true for 465, false for other ports
+    secure: true,
     auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_APP_PASSWORD
-    }
+    },
+    // Fix for ETIMEDOUT: Force IPv4 and set explicit timeouts
+    logger: true,
+    debug: true,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000
 });
 
 const sendOTP = async (toEmail, otp) => {
@@ -37,6 +43,16 @@ const sendOTP = async (toEmail, otp) => {
         console.error('Error sending email:', error);
         return false;
     }
+};
+
+// Add IPv4 requirement to avoiding ipv6 timeouts on some cloud providers
+transporter.verify(function (error, success) {
+    if (error) {
+        console.log('SMTP Connection Error:', error);
+    } else {
+        console.log('SMTP Server is ready to take our messages');
+    }
+});
 };
 
 module.exports = { sendOTP };
