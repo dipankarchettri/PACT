@@ -53,6 +53,6 @@ transporter.verify(function (error, success) {
         console.log('SMTP Server is ready to take our messages');
     }
 });
-};
+
 
 module.exports = { sendOTP };
