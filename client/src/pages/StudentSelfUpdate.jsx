@@ -41,7 +41,7 @@ export default function StudentSelfUpdate() {
     const [otp, setOtp] = useState('');
     const [isSendingOtp, setIsSendingOtp] = useState(false);
     const [otpSent, setOtpSent] = useState(false);
-    const [verifiedOtp, setVerifiedOtp] = useState(false);
+    const [verifiedOtp, setVerifiedOtp] = useState(true); // Bypass OTP verification for now
 
     // Debounced search
     useEffect(() => {
@@ -77,7 +77,7 @@ export default function StudentSelfUpdate() {
         // Reset OTP state for new selection
         setOtp('');
         setOtpSent(false);
-        setVerifiedOtp(false);
+        setVerifiedOtp(true); // Keep verified true
     };
 
     const handleInputChange = (e) => {
