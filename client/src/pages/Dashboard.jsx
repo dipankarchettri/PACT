@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { studentAPI } from '../lib/apiClient';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -180,7 +179,7 @@ export default function Dashboard() {
     const handleRefreshData = async () => {
         setRefreshing(true);
         try {
-            await axios.post('http://localhost:5000/api/students/refresh-all');
+            await studentAPI.refreshAll();
             await fetchStudents(false);
             addToast('Data refreshed successfully', 'success');
         } catch (error) {

@@ -62,6 +62,11 @@ export const studentAPI = {
     // Refresh student data
     refresh: (id) => {
         return apiClient.post(`/students/${id}/refresh`);
+    },
+
+    // Refresh all students data
+    refreshAll: () => {
+        return apiClient.post('/students/refresh-all');
     }
 };
 
