@@ -1,26 +1,16 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD
-    },
-    // Fix for ETIMEDOUT: Force IPv4 and set explicit timeouts
-    logger: true,
-    debug: true,
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000
-});
+// Initialize Resend with API Key
+// NOTE: User must add RESEND_API_KEY to environment variables
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendOTP = async (toEmail, otp) => {
     try {
-        const mailOptions = {
-            from: `"PACT Admin" <${process.env.GMAIL_USER}>`,
-            to: toEmail,
+        console.log(`Attempting to send OTP email to ${toEmail} via Resend...`);
+        
+        const { data, error } = await resend.emails.send({
+            from: 'PACT Admin <onboarding@resend.dev>', // Default testing domain. User should verify their own domain for production.
+            to: [toEmail],
             subject: 'PACT Profile Update Verification Code',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -34,25 +24,19 @@ const sendOTP = async (toEmail, otp) => {
                     <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">If you didn't request this code, please ignore this email.</p>
                 </div>
             `
-        };
+        });
 
-        const info = await transporter.sendMail(mailOptions);
-        console.log('OTP sent: %s', info.messageId);
+        if (error) {
+            console.error('Resend API Error:', error);
+            return false;
+        }
+
+        console.log('OTP sent successfully via Resend. ID:', data.id);
         return true;
-    } catch (error) {
-        console.error('Error sending email:', error);
+    } catch (err) {
+        console.error('Error sending email with Resend:', err);
         return false;
     }
 };
-
-// Add IPv4 requirement to avoiding ipv6 timeouts on some cloud providers
-transporter.verify(function (error, success) {
-    if (error) {
-        console.log('SMTP Connection Error:', error);
-    } else {
-        console.log('SMTP Server is ready to take our messages');
-    }
-});
-
 
 module.exports = { sendOTP };
