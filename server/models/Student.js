@@ -7,6 +7,11 @@ const studentSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    avatarUrl: {
+        type: String,
+        default: null,
+        trim: true
+    },
     usn: {
         type: String,
         required: true,
@@ -52,6 +57,17 @@ const studentSchema = new mongoose.Schema({
         currentStreak: { type: Number, default: 0 },
         longestStreak: { type: Number, default: 0 },
         submissionCalendar: { type: String, default: '{}' }, // Store raw JSON string
+        badges: [{
+            displayName: String,
+            icon: String,
+            creationDate: String,
+            id: String
+        }],
+        activeBadge: {
+            displayName: String,
+            icon: String,
+            id: String
+        },
         languages: { type: Map, of: Number, default: {} },
         lastUpdated: { type: Date, default: null }
     },
@@ -64,7 +80,11 @@ const studentSchema = new mongoose.Schema({
         contributions: { type: Number, default: 0 },
         currentStreak: { type: Number, default: 0 },
         longestStreak: { type: Number, default: 0 },
-        submissionCalendar: { type: String, default: '{}' }, // Store raw JSON string
+        submissionCalendar: { type: Array, default: [] },
+        badges: [{
+            displayName: String,
+            icon: String
+        }],
         lastUpdated: { type: Date, default: null }
     },
 

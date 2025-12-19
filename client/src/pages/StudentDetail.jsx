@@ -146,14 +146,72 @@ export default function StudentDetail() {
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
                                 {/* Col 1: Name & Info (5 cols) */}
                                 <div className="lg:col-span-5 text-center lg:text-left">
-                                    <div className="flex flex-col lg:flex-row items-center gap-3 mb-2">
-                                        <h1 className="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">
-                                            {student.name}
-                                        </h1>
-                                        <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
-                                            <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-bold tracking-wide">{student.usn}</span>
-                                            <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-bold tracking-wide">{student.section}</span>
-                                            <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-bold tracking-wide">{student.batch}</span>
+                                    <div className="flex flex-col lg:flex-row items-center gap-4 mb-2">
+                                        {/* Profile Picture (Click to Upload) */}
+                                        <div 
+                                            className="w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-white shadow-md overflow-hidden bg-slate-100 flex-shrink-0 relative group cursor-pointer"
+                                            onClick={() => document.getElementById('avatar-upload').click()}
+                                        >
+                                            <input 
+                                                type="file" 
+                                                id="avatar-upload" 
+                                                className="hidden" 
+                                                accept="image/*"
+                                                onChange={async (e) => {
+                                                    const file = e.target.files[0];
+                                                    if (!file) return;
+
+                                                    if (file.size > 5 * 1024 * 1024) {
+                                                        alert('File size must be less than 5MB');
+                                                        return;
+                                                    }
+
+                                                    const formData = new FormData();
+                                                    formData.append('avatar', file);
+
+                                                    try {
+                                                        // Show loading state (optimistic or via toast if available, here basic alert or relying on refresh)
+                                                        const res = await fetch(`/api/students/${student._id}/avatar`, {
+                                                            method: 'POST',
+                                                            body: formData
+                                                        });
+                                                        
+                                                        if (!res.ok) throw new Error('Upload failed');
+                                                        
+                                                        const data = await res.json();
+                                                        // Update local state to reflect change immediately
+                                                        setStudent(prev => ({ ...prev, avatarUrl: data.avatarUrl }));
+                                                    } catch (err) {
+                                                        console.error('Upload failed:', err);
+                                                        alert('Failed to upload image');
+                                                    }
+                                                }}
+                                            />
+                                            
+                                            {/* Hover Overlay */}
+                                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                            </div>
+
+                                            <img
+                                                src={student.avatarUrl || `https://api.dicebear.com/7.x/notionists/svg?seed=${student.name}&backgroundColor=e2e8f0`}
+                                                alt={student.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                        
+                                        <div>
+                                            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">
+                                                {student.name}
+                                            </h1>
+                                            <div className="flex flex-wrap gap-2 justify-center lg:justify-start mt-1">
+                                                <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-bold tracking-wide">{student.usn}</span>
+                                                <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-bold tracking-wide">{student.section}</span>
+                                                <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-bold tracking-wide">{student.batch}</span>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -191,17 +249,19 @@ export default function StudentDetail() {
                                     </div>
                                 </div>
 
-                                {/* Col 2: Badges (4 cols) - Centered */}
+                                {/* Col 2: Badges (4 cols) - Centered & Unified */}
                                 <div className="lg:col-span-4 flex flex-col items-center justify-center">
-                                    {student.badges && student.badges.length > 0 ? (
-                                        <div className="flex flex-wrap gap-2 justify-center">
-                                            {student.badges.map((badge, index) => (
-                                                <Badge key={index} type={badge} />
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="text-slate-400 text-xs italic">No badges earned yet</div>
-                                    )}
+                                    <div className="flex flex-wrap gap-3 justify-center">
+                                        
+                                        {/* PACT Badges (Blue/Indigo styling in component) */}
+                                        {student.badges?.map((badge, index) => (
+                                            <Badge key={`pact-${index}`} type={badge} />
+                                        ))}
+
+                                        {(!student.badges?.length) && (
+                                            <div className="text-slate-300 text-xs italic">No awards yet</div>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Col 3: Score (3 cols) - Right aligned */}
@@ -230,6 +290,18 @@ export default function StudentDetail() {
                                 <CardTitle className="flex items-center gap-3 text-lg text-slate-800">
                                     <div className="p-1.5 bg-orange-100 rounded-lg text-orange-600"><Code2 className="w-4 h-4" /></div>
                                     LeetCode Analysis
+                                    {student.leetcodeStats.activeBadge && student.leetcodeStats.activeBadge.icon && (
+                                        <div className="ml-auto flex items-center gap-2 px-2 py-1 bg-orange-50 rounded-full border border-orange-100 max-w-[150px] overflow-hidden">
+                                            <div className="w-5 h-5 flex-shrink-0">
+                                                {student.leetcodeStats.activeBadge.icon.startsWith('http') ? (
+                                                    <img src={student.leetcodeStats.activeBadge.icon} alt="Active Badge" className="w-full h-full object-contain" />
+                                                ) : (
+                                                    <img src={`https://leetcode.com${student.leetcodeStats.activeBadge.icon}`} alt="Active Badge" className="w-full h-full object-contain" />
+                                                )}
+                                            </div>
+                                            <span className="text-[10px] font-bold text-orange-700 truncate">{student.leetcodeStats.activeBadge.displayName}</span>
+                                        </div>
+                                    )}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="pt-2 px-3 pb-3 space-y-3 relative z-10">
@@ -271,6 +343,10 @@ export default function StudentDetail() {
                                     </div>
                                 </div>
 
+
+
+
+
                                 <div className="space-y-3 pt-3 border-t border-slate-100 min-w-0">
                                     <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Activity</div>
                                     <div className="border border-slate-300 shadow-sm rounded-xl overflow-hidden p-2 bg-transparent">
@@ -285,6 +361,23 @@ export default function StudentDetail() {
                                         <TimelineGraph type="leetcode" data={student.leetcodeStats.submissionCalendar} />
                                     </div>
                                 </div>
+
+                                {/* LeetCode Badges Section */}
+                                {student.leetcodeStats.badges && student.leetcodeStats.badges.length > 0 && (
+                                    <div className="pt-3 border-t border-slate-100 mt-3">
+                                        <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Badges</div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {student.leetcodeStats.badges.map((badge, idx) => (
+                                                <Badge 
+                                                    key={`leetcode-${idx}`} 
+                                                    name={badge.displayName} 
+                                                    icon={badge.icon} 
+                                                    platform="leetcode" 
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </motion.div>
@@ -342,6 +435,23 @@ export default function StudentDetail() {
                                         <TimelineGraph type="github" username={student.githubUsername} />
                                     </div>
                                 </div>
+
+                                {/* GitHub Badges Section */}
+                                {student.githubStats.badges && student.githubStats.badges.length > 0 && (
+                                    <div className="pt-3 border-t border-slate-100 mt-3">
+                                        <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Badges</div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {student.githubStats.badges.map((badge, idx) => (
+                                                <Badge 
+                                                    key={`github-${idx}`} 
+                                                    name={badge.displayName} 
+                                                    icon={badge.icon} 
+                                                    platform="github" 
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </motion.div>
