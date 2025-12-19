@@ -4,7 +4,7 @@ import { studentAPI } from '../lib/apiClient';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
-import { Search, MoreVertical, Trophy, Users, Code2, Github, Download, Plus, Edit, Upload, RefreshCw, Zap, Flame } from 'lucide-react';
+import { Search, MoreVertical, Trophy, Users, Code2, Github, Download, Plus, Edit, Upload, RefreshCw, Zap, Flame, Medal } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
 import TimelineGraph from '../components/TimelineGraph';
 import Logo from '../components/Logo';
@@ -94,9 +94,16 @@ export default function Dashboard() {
 
             // GitHub Timeline Aggregation
             try {
-                const ghCalendar = typeof s.githubStats?.submissionCalendar === 'string'
-                    ? JSON.parse(s.githubStats.submissionCalendar)
-                    : s.githubStats?.submissionCalendar;
+                let ghCalendarData = s.githubStats?.submissionCalendar;
+                
+                // Handle case where calendar is wrapped in an array [ "{...}" ]
+                if (Array.isArray(ghCalendarData)) {
+                    ghCalendarData = ghCalendarData[0];
+                }
+
+                const ghCalendar = typeof ghCalendarData === 'string'
+                    ? JSON.parse(ghCalendarData)
+                    : ghCalendarData;
 
                 if (ghCalendar) {
                     Object.entries(ghCalendar).forEach(([date, count]) => {
@@ -162,7 +169,7 @@ export default function Dashboard() {
     // ... handleAdminLogin, handleSearch, useEffect, exportToCSV ...
     const handleAdminLogin = (e) => {
         e.preventDefault();
-        if (password === 'admin') {
+        if (password === import.meta.env.VITE_ADMIN_PASSWORD) {
             setIsAdmin(true);
             setShowLoginModal(false);
             setPassword('');
@@ -601,13 +608,13 @@ export default function Dashboard() {
                                     variant="outline"
                                     onClick={handleRefreshData}
                                     disabled={refreshing}
-                                    className="rounded-full border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                                    className="rounded-full border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50 h-8 px-3 text-xs md:h-10 md:px-4 md:text-sm"
                                 >
-                                    <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                                    <RefreshCw className={`w-3 h-3 mr-1.5 md:w-4 md:h-4 md:mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                                     {refreshing ? 'Refreshing...' : 'Refresh Data'}
                                 </Button>
-                                <Button variant="outline" onClick={exportToCSV} className="rounded-full border-slate-200 text-slate-600 hover:bg-slate-50">
-                                    <Download className="w-4 h-4 mr-2" /> CSV
+                                <Button variant="outline" onClick={exportToCSV} className="rounded-full border-slate-200 text-slate-600 hover:bg-slate-50 h-8 px-3 text-xs md:h-10 md:px-4 md:text-sm">
+                                    <Download className="w-3 h-3 mr-1.5 md:w-4 md:h-4 md:mr-2" /> CSV
                                 </Button>
                             </div>
                         </div>
@@ -617,44 +624,43 @@ export default function Dashboard() {
                             <table className="w-full border-separate border-spacing-y-2 md:border-spacing-y-3">
                                 <thead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                     <tr>
+                                        <th className="text-center py-2 px-1 md:p-4 text-[10px] md:text-xs">Rank</th>
                                         <th className="text-left py-2 pl-2 pr-1 md:p-4 md:pl-6 text-[10px] md:text-xs">Student</th>
                                         <th className="hidden md:table-cell text-center p-4">Cohort</th>
                                         <th 
-                                            className="text-center py-2 px-1 md:p-4 text-[10px] md:text-xs cursor-pointer hover:bg-slate-50 transition select-none group"
+                                            className="hidden md:table-cell text-center py-2 px-1 md:p-4 text-[10px] md:text-xs cursor-pointer hover:bg-slate-50 transition select-none group"
                                             onClick={() => requestSort('leetcode')}
                                         >
                                             <div className="flex items-center justify-center gap-1">
-                                                <span className="md:hidden">LC</span>
-                                                <span className="hidden md:inline">LeetCode</span>
+                                                <span>LeetCode</span>
                                                 <SortIcon columnKey="leetcode" />
                                             </div>
                                         </th>
                                         <th 
-                                            className="text-center py-2 px-1 md:p-4 text-[10px] md:text-xs cursor-pointer hover:bg-slate-50 transition select-none group"
+                                            className="hidden md:table-cell text-center py-2 px-1 md:p-4 text-[10px] md:text-xs cursor-pointer hover:bg-slate-50 transition select-none group"
                                             onClick={() => requestSort('github')}
                                         >
                                             <div className="flex items-center justify-center gap-1">
-                                                <span className="md:hidden">GH</span>
-                                                <span className="hidden md:inline">GitHub</span>
+                                                <span>GitHub</span>
                                                 <SortIcon columnKey="github" />
                                             </div>
                                         </th>
                                         <th 
-                                            className="text-center py-2 px-1 md:p-4 text-[10px] md:text-xs cursor-pointer hover:bg-slate-50 transition select-none group"
+                                            className="text-center py-2 px-1 md:p-4 text-[10px] md:text-xs cursor-default md:cursor-pointer md:hover:bg-slate-50 transition select-none group pointer-events-none md:pointer-events-auto"
                                             onClick={() => requestSort('score')}
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 Score <SortIcon columnKey="score" />
                                             </div>
                                         </th>
-                                        <th className="text-center py-2 pr-2 pl-1 md:p-4 md:pr-6 text-[10px] md:text-xs">Action</th>
+                                        <th className="hidden md:table-cell text-center py-2 pr-2 pl-1 md:p-4 md:pr-6 text-[10px] md:text-xs">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {sortedStudents.map((student) => {
-                                        const isFirst = kpiStats.top3Ids[0] === student._id;
-                                        const isSecond = kpiStats.top3Ids[1] === student._id;
-                                        const isThird = kpiStats.top3Ids[2] === student._id;
+                                    {sortedStudents.map((student, index) => {
+                                        const isFirst = index === 0;
+                                        const isSecond = index === 1;
+                                        const isThird = index === 2;
 
                                         let baseClass = "transition-colors duration-200 border-y py-2 md:py-4";
                                         let leftClass = "border-l rounded-l-xl pl-2 md:pl-6";
@@ -681,7 +687,6 @@ export default function Dashboard() {
                                             leftClass += colorClass;
                                             rightClass += colorClass;
                                         }
-
                                         return (
                                             <motion.tr
                                                 key={student._id}
@@ -689,8 +694,29 @@ export default function Dashboard() {
                                                 onClick={() => navigate(`/student/${student._id}`)}
                                                 className="drop-shadow-sm hover:drop-shadow-md transition-all cursor-pointer group"
                                             >
-                                                <td className={`${baseClass} ${leftClass}`}>
+                                                <td className={`${baseClass} ${leftClass} text-center font-bold text-slate-500`}>
+                                                    <div className="flex justify-center items-center">
+                                                        {index === 0 ? (
+                                                            <Medal className="w-6 h-6 text-yellow-500 fill-yellow-500 drop-shadow-sm" />
+                                                        ) : index === 1 ? (
+                                                            <Medal className="w-6 h-6 text-slate-400 fill-slate-400 drop-shadow-sm" />
+                                                        ) : index === 2 ? (
+                                                            <Medal className="w-6 h-6 text-orange-400 fill-orange-400 drop-shadow-sm" />
+                                                        ) : (
+                                                            <span className="w-6 text-slate-400">#{index + 1}</span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className={`${baseClass}`}>
                                                     <div className="flex items-center gap-2 md:gap-3">
+                                                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-slate-200 overflow-hidden flex-shrink-0 bg-slate-50 relative">
+                                                            <img
+                                                                src={student.avatarUrl || `https://api.dicebear.com/7.x/notionists/svg?seed=${student.name}&backgroundColor=e2e8f0`}
+                                                                alt={student.name}
+                                                                className="w-full h-full object-cover"
+                                                                loading="lazy"
+                                                            />
+                                                        </div>
                                                         <div>
                                                             <div className="font-bold text-slate-800 text-xs md:text-sm max-w-[80px] md:max-w-none truncate group-hover:text-violet-700 transition-colors">{student.name}</div>
                                                             <div className="text-[10px] text-slate-400 font-mono hidden sm:block">{student.usn}</div>
@@ -702,22 +728,22 @@ export default function Dashboard() {
                                                         {student.section} - {student.batch}
                                                     </div>
                                                 </td>
-                                                <td className={`${baseClass} text-center`}>
+                                                <td className={`${baseClass} text-center hidden md:table-cell`}>
                                                     <div className="flex flex-col items-center">
                                                         <span className="font-bold text-orange-600 text-xs md:text-base">{student.leetcodeStats?.totalSolved || 0}</span>
                                                         <span className="text-[8px] md:text-[10px] text-slate-400 uppercase">Solved</span>
                                                     </div>
                                                 </td>
-                                                <td className={`${baseClass} text-center`}>
+                                                <td className={`${baseClass} text-center hidden md:table-cell`}>
                                                     <div className="flex flex-col items-center">
                                                         <span className="font-bold text-emerald-600 text-xs md:text-base">{student.githubStats?.totalCommits || 0}</span>
                                                         <span className="text-[8px] md:text-[10px] text-slate-400 uppercase">Contribs</span>
                                                     </div>
                                                 </td>
-                                                <td className={`${baseClass} text-center`}>
+                                                <td className={`${baseClass} ${rightClass} md:border-r-0 md:rounded-r-none text-center`}>
                                                     <div className="font-bold text-violet-600 text-xs md:text-lg">{student.performanceScore}</div>
                                                 </td>
-                                                <td className={`${baseClass} ${rightClass} text-center`}>
+                                                <td className={`${baseClass} ${rightClass} text-center hidden md:table-cell`}>
                                                     <Button
                                                         size="sm"
                                                         variant="ghost"

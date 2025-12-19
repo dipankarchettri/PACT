@@ -16,7 +16,7 @@ export const AdminProvider = ({ children }) => {
     }, []);
 
     const login = (password) => {
-        if (password === 'admin') {
+        if (password === import.meta.env.VITE_ADMIN_PASSWORD) {
             setIsAdmin(true);
             sessionStorage.setItem('pact_admin_auth', 'true');
             addToast('Welcome back, Admin', 'success');

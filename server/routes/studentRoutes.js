@@ -48,7 +48,14 @@ router.get('/', async (req, res) => {
             }
         }
 
-        const students = await Student.find(query).sort({ performanceScore: -1 });
+        let studentsQuery = Student.find(query).sort({ performanceScore: -1 });
+
+        // If admin request, include email
+        if (req.query.admin === 'true') {
+            studentsQuery = studentsQuery.select('+email');
+        }
+
+        const students = await studentsQuery;
         res.json(students);
     } catch (error) {
         console.error('Error fetching students:', error);
@@ -62,7 +69,7 @@ router.get('/', async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
     try {
-        const student = await Student.findById(req.params.id);
+        const student = await Student.findById(req.params.id).select('+email');
 
         if (!student) {
             return res.status(404).json({ error: 'Student not found' });
@@ -72,6 +79,46 @@ router.get('/:id', async (req, res) => {
     } catch (error) {
         console.error('Error fetching student:', error);
         res.status(500).json({ error: 'Failed to fetch student' });
+    }
+});
+
+/**
+ * POST /api/students/:id/send-otp
+ * Generate and email OTP to the student
+ */
+router.post('/:id/send-otp', async (req, res) => {
+    try {
+        const student = await Student.findById(req.params.id).select('+email');
+        if (!student) return res.status(404).json({ error: 'Student not found' });
+
+        if (!student.email) {
+            return res.status(400).json({ error: 'No email found for this student. Contact admin.' });
+        }
+
+        // Generate 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Hash OTP for storage (simple SHA256 for speed)
+        const crypto = require('crypto');
+        const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+
+        // Save to DB (expires in 10 mins)
+        student.otp = hashedOtp;
+        student.otpExpires = Date.now() + 10 * 60 * 1000;
+        await student.save();
+
+        // Send Email
+        const { sendOTP } = require('../services/emailService');
+        const emailSent = await sendOTP(student.email, otp);
+
+        if (emailSent) {
+            res.json({ message: `OTP sent to ${student.email.replace(/(.{2})(.*)(@.*)/, '$1***$3')}` });
+        } else {
+            res.status(500).json({ error: 'Failed to send email' });
+        }
+    } catch (error) {
+        console.error('Error sending OTP:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 

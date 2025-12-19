@@ -45,6 +45,22 @@ const studentSchema = new mongoose.Schema({
         trim: true,
         default: null
     },
+    email: {
+        type: String,
+        trim: true,
+        lowercase: true,
+        unique: true,
+        sparse: true, // Allow nulls/duplicates for nulls
+        select: false // Don't return by default for privacy
+    },
+    otp: {
+        type: String,
+        select: false
+    },
+    otpExpires: {
+        type: Date,
+        select: false
+    },
 
     // Cached Platform Data
     leetcodeStats: {

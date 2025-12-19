@@ -4,7 +4,7 @@ import { studentAPI } from '../lib/apiClient';
 import { Button } from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import { Chart } from "react-google-charts";
-import { Github, Code2, Linkedin, ArrowLeft, RefreshCw, Mail, Phone } from 'lucide-react';
+import { Github, Code2, Linkedin, ArrowLeft, RefreshCw, Mail, Phone, Edit } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import ActivityGraph from '../components/ActivityGraph';
@@ -148,54 +148,7 @@ export default function StudentDetail() {
                                 <div className="lg:col-span-5 text-center lg:text-left">
                                     <div className="flex flex-col lg:flex-row items-center gap-4 mb-2">
                                         {/* Profile Picture (Click to Upload) */}
-                                        <div 
-                                            className="w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-white shadow-md overflow-hidden bg-slate-100 flex-shrink-0 relative group cursor-pointer"
-                                            onClick={() => document.getElementById('avatar-upload').click()}
-                                        >
-                                            <input 
-                                                type="file" 
-                                                id="avatar-upload" 
-                                                className="hidden" 
-                                                accept="image/*"
-                                                onChange={async (e) => {
-                                                    const file = e.target.files[0];
-                                                    if (!file) return;
-
-                                                    if (file.size > 5 * 1024 * 1024) {
-                                                        alert('File size must be less than 5MB');
-                                                        return;
-                                                    }
-
-                                                    const formData = new FormData();
-                                                    formData.append('avatar', file);
-
-                                                    try {
-                                                        // Show loading state (optimistic or via toast if available, here basic alert or relying on refresh)
-                                                        const res = await fetch(`/api/students/${student._id}/avatar`, {
-                                                            method: 'POST',
-                                                            body: formData
-                                                        });
-                                                        
-                                                        if (!res.ok) throw new Error('Upload failed');
-                                                        
-                                                        const data = await res.json();
-                                                        // Update local state to reflect change immediately
-                                                        setStudent(prev => ({ ...prev, avatarUrl: data.avatarUrl }));
-                                                    } catch (err) {
-                                                        console.error('Upload failed:', err);
-                                                        alert('Failed to upload image');
-                                                    }
-                                                }}
-                                            />
-                                            
-                                            {/* Hover Overlay */}
-                                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                </svg>
-                                            </div>
-
+                                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-white shadow-md overflow-hidden bg-slate-100 flex-shrink-0 relative">
                                             <img
                                                 src={student.avatarUrl || `https://api.dicebear.com/7.x/notionists/svg?seed=${student.name}&backgroundColor=e2e8f0`}
                                                 alt={student.name}
@@ -265,13 +218,23 @@ export default function StudentDetail() {
                                 </div>
 
                                 {/* Col 3: Score (3 cols) - Right aligned */}
-                                <div className="lg:col-span-3 flex justify-center lg:justify-end">
+                                <div className="lg:col-span-3 flex flex-col items-center lg:items-end gap-3">
                                     <div className="bg-white/60 backdrop-blur-sm p-3 px-6 rounded-2xl border border-slate-200 shadow-sm text-center min-w-[140px]">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Performance Score</div>
                                         <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-violet-600 to-fuchsia-600 leading-none tracking-tighter">
                                             {student.performanceScore}
                                         </div>
                                     </div>
+                                    
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-slate-400 hover:text-indigo-600 text-xs gap-1.5 h-8"
+                                        onClick={() => navigate('/update-profile', { state: { student } })}
+                                    >
+                                        <Edit className="w-3.5 h-3.5" />
+                                        Edit Profile
+                                    </Button>
                                 </div>
                             </div>
                         </CardContent>
