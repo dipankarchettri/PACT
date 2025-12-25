@@ -1,4 +1,5 @@
 require('dotenv').config();
+const skillAnalysisRoutes = require('./routes/skillAnalysis');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -31,6 +32,7 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+app.use('/api/skill-analysis', skillAnalysisRoutes);
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {
     const path = require('path');

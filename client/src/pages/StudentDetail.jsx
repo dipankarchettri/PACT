@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom'; // ✨ Added Link
 import { studentAPI } from '../lib/apiClient';
 import { Button } from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
@@ -52,8 +52,6 @@ export default function StudentDetail() {
             setRefreshing(false);
         }
     };
-
-
 
     // Animation Variants
     const containerVariants = {
@@ -137,8 +135,6 @@ export default function StudentDetail() {
                 initial="hidden"
                 animate="visible"
             >
-
-
                 {/* Hero Profile Card */}
                 <motion.div variants={itemVariants} className="mb-6">
                     <Card className="glass-card overflow-hidden !border-slate-300 shadow-sm bg-gradient-to-r from-white/80 to-white/40">
@@ -449,16 +445,30 @@ export default function StudentDetail() {
                     </motion.div>
                 )}
 
+                {/* ✨ BOTTOM ACTION BUTTONS WITH SKILL ANALYSIS */}
                 <div className="mt-8 flex flex-col items-center gap-4">
-                    <Button 
-                        onClick={handleRefresh} 
-                        disabled={refreshing} 
-                        variant="outline" 
-                        className="bg-white/50 backdrop-blur border-slate-200 hover:bg-white transition-all rounded-full shadow-sm"
-                    >
-                        <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-                        {refreshing ? 'Refreshing Data...' : 'Refresh Student Data'}
-                    </Button>
+                    <div className="flex flex-wrap gap-3 justify-center">
+                        <Button 
+                            onClick={handleRefresh} 
+                            disabled={refreshing} 
+                            variant="outline" 
+                            className="bg-white/50 backdrop-blur border-slate-200 hover:bg-white transition-all rounded-full shadow-sm"
+                        >
+                            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                            {refreshing ? 'Refreshing Data...' : 'Refresh Student Data'}
+                        </Button>
+                        
+                        {/* ✨ SKILL ANALYSIS BUTTON AT BOTTOM */}
+                        <Link to={`/students/${id}/skill-analysis`}>
+                            <Button 
+                                variant="outline" 
+                                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-none hover:from-blue-600 hover:to-purple-700 transition-all rounded-full shadow-md"
+                            >
+                                <span className="mr-2">📊</span>
+                                View Skill Analysis
+                            </Button>
+                        </Link>
+                    </div>
                     <div className="text-slate-400 text-sm">
                         Last updated: {new Date(student.lastUpdated).toLocaleString()}
                     </div>
