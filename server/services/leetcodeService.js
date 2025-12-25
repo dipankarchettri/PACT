@@ -1,4 +1,5 @@
 const { LeetCode } = require('leetcode-query');
+const axios = require('axios');
 
 // Initialize LeetCode client
 const leetcode = new LeetCode();
@@ -169,6 +170,7 @@ async function fetchLeetCodeStats(username) {
             badges: badges,
             activeBadge: activeBadge,
             languages: languages,
+            topics: await fetchTopicStats(username),
             lastUpdated: new Date()
         };
     } catch (error) {
@@ -197,3 +199,64 @@ module.exports = {
     fetchLeetCodeStats,
     verifyLeetCodeUsername
 };
+
+async function fetchTopicStats(username) {
+    const query = `
+    query skillStats($username: String!) {
+        matchedUser(username: $username) {
+            tagProblemCounts {
+                advanced {
+                    tagName
+                    tagSlug
+                    problemsSolved
+                }
+                intermediate {
+                    tagName
+                    tagSlug
+                    problemsSolved
+                }
+                fundamental {
+                    tagName
+                    tagSlug
+                    problemsSolved
+                }
+            }
+        }
+    }
+    `;
+
+    try {
+        const response = await axios.post('https://leetcode.com/graphql', {
+            query: query,
+            variables: { username }
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Referer': 'https://leetcode.com'
+            }
+        });
+
+        if (response.data.errors) return [];
+
+        const data = response.data.data;
+        if (!data.matchedUser) return [];
+
+        const tags = data.matchedUser.tagProblemCounts;
+        const topics = [];
+
+        if (tags.fundamental) {
+            tags.fundamental.forEach(t => topics.push({ ...t, category: 'fundamental', name: t.tagName, slug: t.tagSlug, solved: t.problemsSolved }));
+        }
+        if (tags.intermediate) {
+            tags.intermediate.forEach(t => topics.push({ ...t, category: 'intermediate', name: t.tagName, slug: t.tagSlug, solved: t.problemsSolved }));
+        }
+        if (tags.advanced) {
+            tags.advanced.forEach(t => topics.push({ ...t, category: 'advanced', name: t.tagName, slug: t.tagSlug, solved: t.problemsSolved }));
+        }
+
+        return topics;
+    } catch (error) {
+        console.error(`Error fetching topic stats for ${username}:`, error.message);
+        return [];
+    }
+}

@@ -19,5 +19,11 @@ import axios from 'axios';
      getLearningPath: async (studentId) => {
        const response = await axios.get(`${API_URL}/skill-analysis/${studentId}/learning-path`);
        return response.data;
+     },
+
+     // Get AI insights separately (Slow)
+     getAIInsights: async (studentId) => {
+        const response = await axios.get(`${API_URL}/skill-analysis/${studentId}/ai`);
+        return response.data;
      }
    };

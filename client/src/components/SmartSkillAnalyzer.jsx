@@ -1,14 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom'; // Added useNavigate & restored useParams
 import { skillAnalysisService } from '../services/skillAnalysisService';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
-import { TrendingUp, Target, Award, BookOpen, Lightbulb, RefreshCw } from 'lucide-react';
+import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
+import { TrendingUp, Target, Award, BookOpen, Lightbulb, RefreshCw, Sparkles, ArrowLeft } from 'lucide-react'; // Added ArrowLeft
+import { motion } from 'framer-motion'; // Added motion
+import Navbar from './Navbar';
+import LoadingScreen from './LoadingScreen'; // Added LoadingScreen
+import Logo from './Logo'; // Added Logo for custom navbar if needed
+import { Button } from './ui/Button'; // Added Button
+import { Card, CardContent } from './ui/Card'; // Added Card components
+
+const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50', '#8dd1e1', '#a4de6c', '#d0ed57', '#a4c8e0', '#ff8042', '#867ae9'];
 
 const SmartSkillAnalyzer = () => {
   const { id: studentId } = useParams();
+  const navigate = useNavigate(); // Added navigate
   const [analysisData, setAnalysisData] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [aiLoading, setAiLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -24,19 +34,44 @@ const SmartSkillAnalyzer = () => {
       const data = await skillAnalysisService.getAnalysis(studentId);
       
       setAnalysisData({
-        topicBreakdown: data.topicBreakdown || [],
+        topicBreakdown: (data.topicBreakdown || []).map(t => 
+          t.topic === 'Tree' ? { ...t, topic: 'Trees' } : t
+        ),
         weakAreas: data.weakAreas || [],
         strongAreas: data.strongAreas || [],
-        overallScore: data.overallScore || 0
+        overallScore: data.overallScore || 0,
+        aiAnalysis: null // Initially null
       });
       
       setRecommendations(data.recommendations || []);
+      
+      // Fetch AI Insights afterwards
+      fetchAIInsights();
+
     } catch (err) {
       console.error('Error fetching analysis:', err);
       setError('Failed to load skill analysis. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchAIInsights = async () => {
+      try {
+          setAiLoading(true);
+          const aiData = await skillAnalysisService.getAIInsights(studentId);
+          
+          if (aiData.aiAnalysis) {
+              setAnalysisData(prev => ({ ...prev, aiAnalysis: aiData.aiAnalysis }));
+          }
+          if (aiData.recommendations) {
+              setRecommendations(aiData.recommendations);
+          }
+      } catch (e) {
+          console.error("Failed to load AI insights:", e);
+      } finally {
+          setAiLoading(false);
+      }
   };
 
   const handleRefresh = async () => {
@@ -69,11 +104,7 @@ const SmartSkillAnalyzer = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (error) {
@@ -108,8 +139,62 @@ const SmartSkillAnalyzer = () => {
     proficiency: item.proficiency
   }));
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: 'spring', stiffness: 100 }
+    }
+  };
+
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
+    <div className="min-h-screen bg-slate-50 relative overflow-hidden font-sans">
+        {/* Dynamic Background from StudentDetail */}
+        <div className="fixed inset-0 z-0 opacity-30 pointer-events-none">
+            <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-200 rounded-full blur-[100px]"></div>
+            <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-sky-200 rounded-full blur-[100px]"></div>
+        </div>
+
+        {/* Custom Navbar matching StudentDetail */}
+        <nav className="sticky top-0 z-50 glass border-b border-white/20 px-4 md:px-8 py-4 mb-8">
+            <div className="w-full px-2 md:px-6 flex justify-between items-center">
+                <div
+                    className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition"
+                    onClick={() => navigate('/')}
+                >
+                    <Logo className="w-10 h-10" />
+                    <div>
+                        <span className="text-2xl font-black tracking-tight text-slate-900">
+                            PACT
+                        </span>
+                        <div className="flex flex-col leading-none">
+                            <span className="text-[10px] text-slate-500 font-medium tracking-wider uppercase">Performance Analytics & Code Tracker</span>
+                            <span className="text-[10px] text-slate-900 font-bold tracking-wider uppercase">Dept of AI&DS, SIET</span>
+                        </div>
+                    </div>
+                </div>
+                <Button variant="ghost" onClick={() => navigate(-1)} className="text-slate-500 hover:text-slate-800">
+                    <ArrowLeft className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Back</span>
+                </Button>
+            </div>
+        </nav>
+
+        <motion.div
+            className="w-full px-4 md:px-8 pb-12 relative z-10 space-y-6"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+        >
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
         <div className="flex items-center justify-between">
@@ -151,113 +236,137 @@ const SmartSkillAnalyzer = () => {
         </div>
       </div>
 
-      {/* Topic Breakdown - Bar Chart */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-blue-600" />
-          Topic-wise Problem Solving
+      {/* AI Analysis Section */}
+      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 rounded-lg shadow-sm p-6 mb-8 mt-6">
+        <h2 className="text-lg font-semibold text-purple-800 mb-3 flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-purple-600" />
+          AI Skill Assessment
         </h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={analysisData.topicBreakdown}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="topic" angle={-45} textAnchor="end" height={100} />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="easy" stackId="a" fill="#10b981" name="Easy" />
-            <Bar dataKey="medium" stackId="a" fill="#f59e0b" name="Medium" />
-            <Bar dataKey="hard" stackId="a" fill="#ef4444" name="Hard" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Proficiency Radar Chart & Strong/Weak Areas */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">Proficiency Radar</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <RadarChart data={radarData}>
-              <PolarGrid />
-              <PolarAngleAxis dataKey="topic" />
-              <PolarRadiusAxis angle={90} domain={[0, 100]} />
-              <Radar name="Proficiency" dataKey="proficiency" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
-            </RadarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Strong & Weak Areas */}
-        <div className="space-y-4">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-green-600 mb-3 flex items-center gap-2">
-              <Award className="w-5 h-5" />
-              Strong Areas
-            </h3>
-            <div className="space-y-2">
-              {analysisData.strongAreas.map((area, idx) => (
-                <div key={idx} className="flex items-center gap-2 bg-green-50 px-3 py-2 rounded">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-gray-700">{area}</span>
-                </div>
-              ))}
-            </div>
+        {aiLoading && !analysisData.aiAnalysis ? (
+          <div className="flex items-center gap-2 text-purple-600 animate-pulse">
+            <RefreshCw className="w-4 h-4 animate-spin" />
+            <span>Generating personalized insights...</span>
           </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-red-600 mb-3 flex items-center gap-2">
-              <Target className="w-5 h-5" />
-              Areas for Improvement
-            </h3>
-            <div className="space-y-2">
-              {analysisData.weakAreas.map((area, idx) => (
-                <div key={idx} className="flex items-center gap-2 bg-red-50 px-3 py-2 rounded">
-                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                  <span className="text-gray-700">{area}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Personalized Recommendations */}
-      {recommendations.length > 0 && (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Lightbulb className="w-5 h-5 text-yellow-500" />
-            Personalized Problem Recommendations
-          </h2>
-          <p className="text-sm text-gray-600 mb-4">
-            Click on any problem to practice on LeetCode 🚀
+        ) : (
+          <p className="text-gray-700 leading-relaxed font-medium">
+            {analysisData.aiAnalysis || "AI analysis unavailable."}
           </p>
-          <div className="space-y-4">
+        )}
+      </div>
+
+      {/* Graphs Grid: Bar Chart (2) + Radar Chart (1) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Topic Breakdown - Bar Chart (Col Span 2) */}
+          <div className="bg-white rounded-lg shadow-md p-6 lg:col-span-2">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-blue-600" />
+              Topic-wise Problem Solving
+            </h2>
+            <ResponsiveContainer width="100%" height={500}>
+              <BarChart data={analysisData.topicBreakdown}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="topic" angle={-45} textAnchor="end" height={100} />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="solved" name="Total Solved" radius={[4, 4, 0, 0]}>
+                  {analysisData.topicBreakdown.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Proficiency Radar Chart (Col Span 1) */}
+          <div className="bg-white rounded-lg shadow-md p-6 lg:col-span-1 h-full"> 
+            <h2 className="text-xl font-semibold mb-4">Proficiency Radar</h2>
+            <ResponsiveContainer width="100%" height={500}>
+                <RadarChart data={radarData}>
+                <PolarGrid />
+                <PolarAngleAxis dataKey="topic" />
+                <PolarRadiusAxis angle={90} domain={[0, 100]} />
+                <Radar name="Proficiency" dataKey="proficiency" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
+                </RadarChart>
+            </ResponsiveContainer>
+          </div>
+      </div>
+
+      {/* Personalized Recommendations & Strong/Weak Areas */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
+          <Lightbulb className="w-5 h-5 text-yellow-500" />
+          Personalized Problem Recommendations
+          {aiLoading && <span className="text-sm font-normal text-gray-500 flex items-center gap-1 ml-2"><RefreshCw className="w-3 h-3 animate-spin"/> Refining with AI...</span>}
+        </h2>
+        
+        {/* Strong & Weak Areas (Moved Inside) */}
+        <div className="grid md:grid-cols-2 gap-6 mb-8 bg-slate-50 p-4 rounded-xl border border-slate-100">
+            <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-green-600 mb-3 flex items-center gap-2">
+                    <Award className="w-5 h-5" /> Strong Areas
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                    {analysisData.strongAreas.map((area, idx) => (
+                        <div key={idx} className="flex items-center gap-2 bg-white border border-green-100 px-3 py-2 rounded-lg shadow-sm">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-gray-700 font-medium">{area}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-red-600 mb-3 flex items-center gap-2">
+                    <Target className="w-5 h-5" /> Areas for Improvement
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                    {analysisData.weakAreas.map((area, idx) => (
+                        <div key={idx} className="flex items-center gap-2 bg-white border border-red-100 px-3 py-2 rounded-lg shadow-sm">
+                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                            <span className="text-gray-700 font-medium">{area}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+
+        {recommendations.length > 0 ? (
+          <>
+          <p className="text-sm text-gray-600 mb-4 font-medium">
+            Based on your weak areas, here are some problems to help you improve 🚀
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {recommendations.map((rec, idx) => (
-              <div key={idx} className="border border-gray-200 rounded-lg p-4 bg-gradient-to-r from-blue-50 to-purple-50">
+              <div key={idx} className="border border-gray-200 rounded-xl p-5 bg-gradient-to-br from-white to-blue-50/50 hover:shadow-md transition-shadow h-full flex flex-col">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <h3 className="text-lg font-bold text-gray-800 mb-1">{rec.topic}</h3>
-                    <p className="text-sm text-gray-600 mb-3">{rec.reason}</p>
                   </div>
-                  <div className="bg-blue-100 p-2 rounded-full">
+                  <div className="bg-blue-100 p-2 rounded-full flex-shrink-0">
                     <BookOpen className="w-5 h-5 text-blue-600" />
                   </div>
                 </div>
-                <div className="space-y-2 mt-4">
-                  <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Recommended Problems:</p>
+                
+                <p className="text-sm text-gray-600 mb-4 flex-grow">{rec.reason}</p>
+                
+                <div className="space-y-2 mt-auto">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Recommended Problems</p>
                   {rec.suggestedProblems && rec.suggestedProblems.map((problem, pIdx) => (
                     <a
                       key={pIdx}
                       href={problem.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3 bg-white hover:bg-blue-50 rounded-lg transition-all border border-gray-200 hover:border-blue-300 hover:shadow-md group"
+                      className="flex items-center justify-between p-2.5 bg-white hover:bg-blue-50 rounded-lg transition-all border border-gray-200 hover:border-blue-300 group"
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="text-gray-400 group-hover:text-blue-600 transition-colors">→</span>
-                        <span className="font-medium text-gray-800 group-hover:text-blue-600 transition-colors">
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        <span className="text-gray-300 group-hover:text-blue-500 transition-colors flex-shrink-0">➜</span>
+                        <span className="font-semibold text-gray-700 group-hover:text-blue-700 transition-colors text-xs truncate">
                           {problem.name}
                         </span>
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${getDifficultyColor(problem.difficulty)}`}>
+                      <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold ${getDifficultyColor(problem.difficulty)}`}>
                         {problem.difficulty}
                       </span>
                     </a>
@@ -266,8 +375,11 @@ const SmartSkillAnalyzer = () => {
               </div>
             ))}
           </div>
-        </div>
-      )}
+          </>
+        ) : (
+           <p className="text-gray-500 italic text-center py-8">No specific recommendations yet.</p>
+        )}
+      </div>
 
       {/* Topic Details Table */}
       <div className="bg-white rounded-lg shadow-md p-6">
@@ -278,9 +390,6 @@ const SmartSkillAnalyzer = () => {
               <tr>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Topic</th>
                 <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">Solved</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">Easy</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">Medium</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">Hard</th>
                 <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">Proficiency</th>
                 <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">Level</th>
               </tr>
@@ -294,9 +403,6 @@ const SmartSkillAnalyzer = () => {
                     <td className="px-4 py-3 text-sm text-center text-gray-600">
                       {topic.solved}/{topic.total}
                     </td>
-                    <td className="px-4 py-3 text-sm text-center text-green-600">{topic.easy || 0}</td>
-                    <td className="px-4 py-3 text-sm text-center text-yellow-600">{topic.medium || 0}</td>
-                    <td className="px-4 py-3 text-sm text-center text-red-600">{topic.hard || 0}</td>
                     <td className="px-4 py-3 text-sm text-center">
                       <div className="flex items-center justify-center gap-2">
                         <div className="w-24 bg-gray-200 rounded-full h-2">
@@ -320,8 +426,9 @@ const SmartSkillAnalyzer = () => {
           </table>
         </div>
       </div>
-    </div>
-  );
+    </motion.div>
+  </div>
+);
 };
 
 export default SmartSkillAnalyzer;

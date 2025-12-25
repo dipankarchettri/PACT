@@ -85,6 +85,12 @@ const studentSchema = new mongoose.Schema({
             id: String
         },
         languages: { type: Map, of: Number, default: {} },
+        topics: [{
+            slug: String,
+            name: String,
+            solved: Number,
+            category: String // 'fundamental', 'intermediate', 'advanced'
+        }],
         lastUpdated: { type: Date, default: null }
     },
 
