@@ -4,7 +4,7 @@ import { studentAPI } from '../lib/apiClient';
 import { Button } from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import { Chart } from "react-google-charts";
-import { Github, Code2, Linkedin, ArrowLeft, RefreshCw, Mail, Phone } from 'lucide-react';
+import { Github, Code2, Linkedin, ArrowLeft, RefreshCw, Mail, Phone, Edit } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import ActivityGraph from '../components/ActivityGraph';
@@ -142,14 +142,25 @@ export default function StudentDetail() {
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
                                 {/* Col 1: Name & Info (5 cols) */}
                                 <div className="lg:col-span-5 text-center lg:text-left">
-                                    <div className="flex flex-col lg:flex-row items-center gap-3 mb-2">
-                                        <h1 className="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">
-                                            {student.name}
-                                        </h1>
-                                        <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
-                                            <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-bold tracking-wide">{student.usn}</span>
-                                            <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-bold tracking-wide">{student.section}</span>
-                                            <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-bold tracking-wide">{student.batch}</span>
+                                    <div className="flex flex-col lg:flex-row items-center gap-4 mb-2">
+                                        {/* Profile Picture (Click to Upload) */}
+                                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-white shadow-md overflow-hidden bg-slate-100 flex-shrink-0 relative">
+                                            <img
+                                                src={student.avatarUrl || `https://api.dicebear.com/7.x/notionists/svg?seed=${student.name}&backgroundColor=e2e8f0`}
+                                                alt={student.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                        
+                                        <div>
+                                            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">
+                                                {student.name}
+                                            </h1>
+                                            <div className="flex flex-wrap gap-2 justify-center lg:justify-start mt-1">
+                                                <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-bold tracking-wide">{student.usn}</span>
+                                                <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-bold tracking-wide">{student.section}</span>
+                                                <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-bold tracking-wide">{student.batch}</span>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -187,38 +198,39 @@ export default function StudentDetail() {
                                     </div>
                                 </div>
 
-                                {/* Col 2: Badges (4 cols) - Centered */}
-                                <div className="lg:col-span-4 flex flex-col items-center justify-center gap-3">
-                                    {student.badges && student.badges.length > 0 ? (
-                                        <div className="flex flex-wrap gap-2 justify-center">
-                                            {student.badges.map((badge, index) => (
-                                                <Badge key={index} type={badge} />
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="text-slate-400 text-xs italic">No badges earned yet</div>
-                                    )}
-                                    
-                                    {/* ✨ SKILL ANALYSIS BUTTON IN HERO CARD */}
-                                    <Link to={`/students/${id}/skill-analysis`} className="w-full max-w-xs">
-                                        <Button 
-                                            variant="outline" 
-                                            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white border-none hover:from-blue-600 hover:to-purple-700 transition-all shadow-md"
-                                        >
-                                            <span className="mr-2">📊</span>
-                                            View Skill Analysis
-                                        </Button>
-                                    </Link>
+                                {/* Col 2: Badges (4 cols) - Centered & Unified */}
+                                <div className="lg:col-span-4 flex flex-col items-center justify-center">
+                                    <div className="flex flex-wrap gap-3 justify-center">
+                                        
+                                        {/* PACT Badges (Blue/Indigo styling in component) */}
+                                        {student.badges?.map((badge, index) => (
+                                            <Badge key={`pact-${index}`} type={badge} />
+                                        ))}
+
+                                        {(!student.badges?.length) && (
+                                            <div className="text-slate-300 text-xs italic">No awards yet</div>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Col 3: Score (3 cols) - Right aligned */}
-                                <div className="lg:col-span-3 flex justify-center lg:justify-end">
+                                <div className="lg:col-span-3 flex flex-col items-center lg:items-end gap-3">
                                     <div className="bg-white/60 backdrop-blur-sm p-3 px-6 rounded-2xl border border-slate-200 shadow-sm text-center min-w-[140px]">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Performance Score</div>
                                         <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-violet-600 to-fuchsia-600 leading-none tracking-tighter">
                                             {student.performanceScore}
                                         </div>
                                     </div>
+                                    
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-slate-400 hover:text-indigo-600 text-xs gap-1.5 h-8"
+                                        onClick={() => navigate('/update-profile', { state: { student } })}
+                                    >
+                                        <Edit className="w-3.5 h-3.5" />
+                                        Edit Profile
+                                    </Button>
                                 </div>
                             </div>
                         </CardContent>
@@ -237,6 +249,18 @@ export default function StudentDetail() {
                                 <CardTitle className="flex items-center gap-3 text-lg text-slate-800">
                                     <div className="p-1.5 bg-orange-100 rounded-lg text-orange-600"><Code2 className="w-4 h-4" /></div>
                                     LeetCode Analysis
+                                    {student.leetcodeStats.activeBadge && student.leetcodeStats.activeBadge.icon && (
+                                        <div className="ml-auto flex items-center gap-2 px-2 py-1 bg-orange-50 rounded-full border border-orange-100 max-w-[150px] overflow-hidden">
+                                            <div className="w-5 h-5 flex-shrink-0">
+                                                {student.leetcodeStats.activeBadge.icon.startsWith('http') ? (
+                                                    <img src={student.leetcodeStats.activeBadge.icon} alt="Active Badge" className="w-full h-full object-contain" />
+                                                ) : (
+                                                    <img src={`https://leetcode.com${student.leetcodeStats.activeBadge.icon}`} alt="Active Badge" className="w-full h-full object-contain" />
+                                                )}
+                                            </div>
+                                            <span className="text-[10px] font-bold text-orange-700 truncate">{student.leetcodeStats.activeBadge.displayName}</span>
+                                        </div>
+                                    )}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="pt-2 px-3 pb-3 space-y-3 relative z-10">
@@ -278,6 +302,10 @@ export default function StudentDetail() {
                                     </div>
                                 </div>
 
+
+
+
+
                                 <div className="space-y-3 pt-3 border-t border-slate-100 min-w-0">
                                     <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Activity</div>
                                     <div className="border border-slate-300 shadow-sm rounded-xl overflow-hidden p-2 bg-transparent">
@@ -292,6 +320,23 @@ export default function StudentDetail() {
                                         <TimelineGraph type="leetcode" data={student.leetcodeStats.submissionCalendar} />
                                     </div>
                                 </div>
+
+                                {/* LeetCode Badges Section */}
+                                {student.leetcodeStats.badges && student.leetcodeStats.badges.length > 0 && (
+                                    <div className="pt-3 border-t border-slate-100 mt-3">
+                                        <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Badges</div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {student.leetcodeStats.badges.map((badge, idx) => (
+                                                <Badge 
+                                                    key={`leetcode-${idx}`} 
+                                                    name={badge.displayName} 
+                                                    icon={badge.icon} 
+                                                    platform="leetcode" 
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </motion.div>
@@ -349,6 +394,23 @@ export default function StudentDetail() {
                                         <TimelineGraph type="github" username={student.githubUsername} />
                                     </div>
                                 </div>
+
+                                {/* GitHub Badges Section */}
+                                {student.githubStats.badges && student.githubStats.badges.length > 0 && (
+                                    <div className="pt-3 border-t border-slate-100 mt-3">
+                                        <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Badges</div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {student.githubStats.badges.map((badge, idx) => (
+                                                <Badge 
+                                                    key={`github-${idx}`} 
+                                                    name={badge.displayName} 
+                                                    icon={badge.icon} 
+                                                    platform="github" 
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </motion.div>

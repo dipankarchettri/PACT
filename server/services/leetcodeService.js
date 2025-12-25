@@ -135,9 +135,24 @@ async function fetchLeetCodeStats(username) {
                     longestStreak = Math.max(longestStreak, tempStreak);
                 }
             }
+
         } catch (err) {
             console.log(`Could not calculate streaks for ${username}:`, err.message);
         }
+
+        // Extract Badges
+        const badges = user.matchedUser?.badges?.map(badge => ({
+            displayName: badge.displayName,
+            icon: badge.icon,
+            creationDate: badge.creationDate,
+            id: badge.id
+        })) || [];
+
+        const activeBadge = user.matchedUser?.activeBadge ? {
+            displayName: user.matchedUser.activeBadge.displayName,
+            icon: user.matchedUser.activeBadge.icon,
+            id: user.matchedUser.activeBadge.id
+        } : null;
 
         return {
             totalSolved: totalSolved,
@@ -151,6 +166,8 @@ async function fetchLeetCodeStats(username) {
             submissionCalendar: typeof user.matchedUser?.submissionCalendar === 'string'
                 ? user.matchedUser.submissionCalendar
                 : JSON.stringify(user.matchedUser?.submissionCalendar || {}),
+            badges: badges,
+            activeBadge: activeBadge,
             languages: languages,
             lastUpdated: new Date()
         };

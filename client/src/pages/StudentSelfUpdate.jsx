@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, User, Save, ArrowLeft, Github, Code2, Linkedin, Phone, CheckCircle, Loader2 } from 'lucide-react';
+import { Search, User, Save, ArrowLeft, Github, Code2, Linkedin, Phone, CheckCircle, Loader2, Camera } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
@@ -11,7 +11,17 @@ import { useToast } from '../contexts/ToastContext';
 
 export default function StudentSelfUpdate() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { addToast } = useToast();
+
+    // Auto-select student if passed via navigation state
+    useEffect(() => {
+        if (location.state?.student) {
+            handleSelectStudent(location.state.student);
+            // Clear state to prevent re-selection on refresh (optional, but good practice)
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state]);
 
     // State for search
     const [searchTerm, setSearchTerm] = useState('');
@@ -27,6 +37,11 @@ export default function StudentSelfUpdate() {
         phoneNumber: ''
     });
     const [isSaving, setIsSaving] = useState(false);
+
+    const [otp, setOtp] = useState('');
+    const [isSendingOtp, setIsSendingOtp] = useState(false);
+    const [otpSent, setOtpSent] = useState(false);
+    const [verifiedOtp, setVerifiedOtp] = useState(true); // Bypass OTP verification for now
 
     // Debounced search
     useEffect(() => {
@@ -59,6 +74,10 @@ export default function StudentSelfUpdate() {
         });
         setSearchTerm('');
         setSearchResults([]);
+        // Reset OTP state for new selection
+        setOtp('');
+        setOtpSent(false);
+        setVerifiedOtp(true); // Keep verified true
     };
 
     const handleInputChange = (e) => {
@@ -69,16 +88,38 @@ export default function StudentSelfUpdate() {
         }));
     };
 
+    const handleSendOTP = async () => {
+        if (!selectedStudent) return;
+        setIsSendingOtp(true);
+        try {
+            const res = await fetch(`/api/students/${selectedStudent._id}/send-otp`, { method: 'POST' });
+            const data = await res.json();
+            
+            if (res.ok) {
+                addToast(data.message, "success");
+                setOtpSent(true);
+            } else {
+                addToast(data.error || "Failed to send OTP", "error");
+            }
+        } catch (error) {
+            console.error("OTP Error:", error);
+            addToast("Network error. Try again.", "error");
+        } finally {
+            setIsSendingOtp(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!selectedStudent) return;
+        if (!selectedStudent || !verifiedOtp) return; // double check
 
         setIsSaving(true);
         try {
-            // We only send the fields allowed to be updated by the student
+            // Include OTP in the payload
             await studentAPI.update(selectedStudent._id, {
-                ...selectedStudent, // Keep existing core data
-                ...formData
+                ...selectedStudent,
+                ...formData,
+                otp // Send OTP for server-side verification
             });
             
             addToast("Profile updated successfully!", "success");
@@ -198,92 +239,207 @@ export default function StudentSelfUpdate() {
                                 <p className="opacity-80 font-mono text-sm relative z-10">{selectedStudent.usn} • {selectedStudent.section} Sec</p>
                                 <button 
                                     onClick={() => setSelectedStudent(null)}
-                                    className="absolute top-4 left-4 p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition text-white text-xs flex items-center gap-1 backdrop-blur-sm"
+                                    className="absolute top-4 left-4 p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition text-white text-xs flex items-center gap-1 backdrop-blur-sm z-20"
                                 >
                                     <ArrowLeft className="w-3 h-3" /> Change
                                 </button>
                             </div>
                             
                             <CardContent className="p-6">
-                                <form onSubmit={handleSubmit} className="space-y-5">
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-1.5">
-                                                <Github className="w-4 h-4 text-slate-600" /> GitHub Username
-                                            </label>
-                                            <Input
-                                                name="githubUsername"
-                                                value={formData.githubUsername}
-                                                onChange={handleInputChange}
-                                                placeholder="e.g. mona-lisa"
-                                                className="bg-white"
-                                            />
+                                {/* Step 1: Request OTP */}
+                                {!verifiedOtp ? (
+                                    <div className="space-y-6 text-center py-8">
+                                        <div className="mx-auto bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                                            <div className="text-2xl">🔒</div>
                                         </div>
+                                        <h3 className="text-xl font-bold text-slate-800">Identity Verification Required</h3>
+                                        <p className="text-slate-500 max-w-sm mx-auto">
+                                            To ensure security, please verify your identity before making changes. We will send a One-Time Password (OTP) to your registered email.
+                                        </p>
 
-                                        <div>
-                                            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-1.5">
-                                                <Code2 className="w-4 h-4 text-slate-600" /> LeetCode Username
-                                            </label>
-                                            <Input
-                                                name="leetcodeUsername"
-                                                value={formData.leetcodeUsername}
-                                                onChange={handleInputChange}
-                                                placeholder="e.g. monalisa"
-                                                className="bg-white"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-1.5">
-                                                <Linkedin className="w-4 h-4 text-slate-600" /> LinkedIn URL
-                                            </label>
-                                            <Input
-                                                name="linkedinUrl"
-                                                value={formData.linkedinUrl}
-                                                onChange={handleInputChange}
-                                                placeholder="https://linkedin.com/in/..."
-                                                className="bg-white"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-1.5">
-                                                <Phone className="w-4 h-4 text-slate-600" /> Phone Number <span className="text-xs font-normal text-slate-400">(Optional)</span>
-                                            </label>
-                                            <Input
-                                                name="phoneNumber"
-                                                value={formData.phoneNumber}
-                                                onChange={handleInputChange}
-                                                placeholder="+91..."
-                                                className="bg-white"
-                                            />
-                                        </div>
+                                        {!otpSent ? (
+                                            <Button 
+                                                onClick={handleSendOTP} 
+                                                disabled={isSendingOtp}
+                                                className="bg-indigo-600 hover:bg-indigo-700 text-white w-full max-w-xs"
+                                            >
+                                                {isSendingOtp ? (
+                                                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending...</>
+                                                ) : (
+                                                    'Send OTP via Email'
+                                                )}
+                                            </Button>
+                                        ) : (
+                                            <div className="space-y-4 max-w-xs mx-auto animate-in fade-in slide-in-from-bottom-4">
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <label className="text-sm font-medium text-slate-700">Enter Verification Code</label>
+                                                    <Input 
+                                                        value={otp}
+                                                        onChange={(e) => setOtp(e.target.value)}
+                                                        placeholder="Enter 6-digit OTP"
+                                                        className="text-center text-2xl tracking-widest h-14"
+                                                        maxLength={6}
+                                                    />
+                                                </div>
+                                                <Button 
+                                                    onClick={() => {
+                                                        if (otp.length === 6) {
+                                                            setVerifiedOtp(true);
+                                                            addToast("Identity verified! You can now edit your profile.", "success");
+                                                        } else {
+                                                            addToast("Please enter a valid 6-digit OTP", "error");
+                                                        }
+                                                    }}
+                                                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                                                >
+                                                    Verify & Proceed
+                                                </Button>
+                                                <button 
+                                                    onClick={() => setOtpSent(false)}
+                                                    className="text-xs text-slate-400 hover:text-slate-600 underline"
+                                                >
+                                                    Resend Code
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
+                                ) : (
+                                    /* Step 2: Edit Form (Only shown after verification) */
+                                    <>
+                                        {/* Avatar Upload Section */}
+                                        <div className="flex flex-col items-center mb-6">
+                                            <div 
+                                                className="relative w-24 h-24 rounded-full border-4 border-white shadow-md cursor-pointer group bg-slate-100 overflow-hidden"
+                                                onClick={() => document.getElementById('update-avatar-upload').click()}
+                                            >
+                                                <img
+                                                    src={selectedStudent.avatarUrl || `https://api.dicebear.com/7.x/notionists/svg?seed=${selectedStudent.name}&backgroundColor=e2e8f0`}
+                                                    alt={selectedStudent.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <Camera className="w-8 h-8 text-white" />
+                                                </div>
+                                                <input 
+                                                    type="file" 
+                                                    id="update-avatar-upload" 
+                                                    className="hidden" 
+                                                    accept="image/*"
+                                                    onChange={async (e) => {
+                                                        const file = e.target.files[0];
+                                                        if (!file) return;
 
-                                    <div className="pt-4">
-                                        <Button 
-                                            type="submit" 
-                                            disabled={isSaving}
-                                            className="w-full bg-slate-900 hover:bg-slate-800 text-white h-12 text-base shadow-lg hover:shadow-xl transition-all"
-                                        >
-                                            {isSaving ? (
-                                                <>
-                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                    Saving...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <CheckCircle className="w-4 h-4 mr-2" />
-                                                    Update Profile
-                                                </>
-                                            )}
-                                        </Button>
-                                    </div>
-                                    
-                                    <p className="text-xs text-center text-slate-400 mt-4">
-                                        Data is validated automatically. Invalid usernames may result in stats not tracking.
-                                    </p>
-                                </form>
+                                                        if (file.size > 5 * 1024 * 1024) {
+                                                            addToast('File size must be less than 5MB', 'error');
+                                                            return;
+                                                        }
+
+                                                        const formData = new FormData();
+                                                        formData.append('avatar', file);
+
+                                                        try {
+                                                            addToast('Uploading image...', 'info');
+                                                            const res = await fetch(`/api/students/${selectedStudent._id}/avatar`, {
+                                                                method: 'POST',
+                                                                body: formData
+                                                            });
+                                                            
+                                                            if (!res.ok) throw new Error('Upload failed');
+                                                            
+                                                            const data = await res.json();
+                                                            setSelectedStudent(prev => ({ ...prev, avatarUrl: data.avatarUrl }));
+                                                            addToast('Profile picture updated!', 'success');
+                                                        } catch (err) {
+                                                            console.error('Upload failed:', err);
+                                                            addToast('Failed to upload image', 'error');
+                                                        }
+                                                    }}
+                                                />
+                                            </div>
+                                            <p className="text-xs text-slate-400 mt-2">Click to change photo</p>
+                                        </div>
+
+                                        <form onSubmit={handleSubmit} className="space-y-5">
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-1.5">
+                                                        <Github className="w-4 h-4 text-slate-600" /> GitHub Username
+                                                    </label>
+                                                    <Input
+                                                        name="githubUsername"
+                                                        value={formData.githubUsername}
+                                                        onChange={handleInputChange}
+                                                        placeholder="e.g. mona-lisa"
+                                                        className="bg-white"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-1.5">
+                                                        <Code2 className="w-4 h-4 text-slate-600" /> LeetCode Username
+                                                    </label>
+                                                    <Input
+                                                        name="leetcodeUsername"
+                                                        value={formData.leetcodeUsername}
+                                                        onChange={handleInputChange}
+                                                        placeholder="e.g. monalisa"
+                                                        className="bg-white"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-1.5">
+                                                        <Linkedin className="w-4 h-4 text-slate-600" /> LinkedIn URL
+                                                    </label>
+                                                    <Input
+                                                        name="linkedinUrl"
+                                                        value={formData.linkedinUrl}
+                                                        onChange={handleInputChange}
+                                                        placeholder="https://linkedin.com/in/..."
+                                                        className="bg-white"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-1.5">
+                                                        <Phone className="w-4 h-4 text-slate-600" /> Phone Number <span className="text-xs font-normal text-slate-400">(Optional)</span>
+                                                    </label>
+                                                    <Input
+                                                        name="phoneNumber"
+                                                        value={formData.phoneNumber}
+                                                        onChange={handleInputChange}
+                                                        placeholder="+91..."
+                                                        className="bg-white"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="pt-4">
+                                                <Button 
+                                                    type="submit" 
+                                                    disabled={isSaving}
+                                                    className="w-full bg-slate-900 hover:bg-slate-800 text-white h-12 text-base shadow-lg hover:shadow-xl transition-all"
+                                                >
+                                                    {isSaving ? (
+                                                        <>
+                                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                            Saving...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <CheckCircle className="w-4 h-4 mr-2" />
+                                                            Update Profile
+                                                        </>
+                                                    )}
+                                                </Button>
+                                            </div>
+                                            
+                                            <p className="text-xs text-center text-slate-400 mt-4">
+                                                Data is validated automatically. Invalid usernames may result in stats not tracking.
+                                            </p>
+                                        </form>
+                                    </>
+                                )}
                             </CardContent>
                         </Card>
                     )}

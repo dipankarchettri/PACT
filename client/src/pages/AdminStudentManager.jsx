@@ -50,7 +50,7 @@ export default function AdminStudentManager() {
     const fetchStudents = async () => {
         try {
             setLoading(true);
-            const { data } = await studentAPI.getAll();
+            const { data } = await studentAPI.getAll({ admin: true });
             // Add local status field for UI feedback
             const mapped = data.map(s => ({
                 ...s,
@@ -82,7 +82,8 @@ export default function AdminStudentManager() {
                 batch: parseInt(student.batch),
                 githubUsername: student.githubUsername,
                 leetcodeUsername: student.leetcodeUsername,
-                linkedinUrl: student.linkedinUrl
+                linkedinUrl: student.linkedinUrl,
+                email: student.email
             });
 
             setStudents(prev => prev.map(s =>
@@ -237,6 +238,7 @@ export default function AdminStudentManager() {
                                                 <div className="md:hidden">
                                                     <div className="font-bold text-slate-900">{student.name}</div>
                                                     <div className="text-xs font-mono text-slate-500">{student.usn}</div>
+                                                    <div className="text-[10px] text-slate-400">{student.email}</div>
                                                 </div>
                                                 {/* Desktop: Inputs */}
                                                 <div className="hidden md:block">
@@ -249,6 +251,12 @@ export default function AdminStudentManager() {
                                                         value={student.usn}
                                                         onChange={(e) => handleInputChange(student._id, 'usn', e.target.value)}
                                                         className="font-mono text-xs text-slate-500 border-slate-300 hover:border-slate-400 focus:border-violet-200 h-6 px-2 -mx-2 bg-transparent"
+                                                    />
+                                                    <Input
+                                                        value={student.email || ''}
+                                                        onChange={(e) => handleInputChange(student._id, 'email', e.target.value)}
+                                                        placeholder="Email"
+                                                        className="font-mono text-[10px] text-slate-400 border-slate-300 hover:border-slate-400 focus:border-violet-200 h-6 px-2 -mx-2 bg-transparent mt-0.5"
                                                     />
                                                 </div>
                                             </td>
@@ -380,6 +388,12 @@ export default function AdminStudentManager() {
                                             onChange={(e) => handleEditInputChange('usn', e.target.value)}
                                             placeholder="USN"
                                             className="font-mono text-sm"
+                                        />
+                                        <Input
+                                            value={editingStudent.email || ''}
+                                            onChange={(e) => handleEditInputChange('email', e.target.value)}
+                                            placeholder="Email"
+                                            className="font-mono text-sm mt-2"
                                         />
                                     </div>
                                     
