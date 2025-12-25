@@ -1,3 +1,4 @@
+import SmartSkillAnalyzer from './components/SmartSkillAnalyzer';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import StudentForm from './pages/StudentForm';
@@ -18,6 +19,7 @@ function App() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/students" element={<AdminStudentManager />} />
         <Route path="/update-profile" element={<StudentSelfUpdate />} />
+	<Route path="/students/:id/skill-analysis" element={<SmartSkillAnalyzer />} />
       </Routes>
     </BrowserRouter>
   );
