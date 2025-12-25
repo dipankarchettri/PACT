@@ -233,15 +233,7 @@ export default function StudentDetail() {
                                         </div>
                                     </div>
                                     
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium border-none shadow-sm h-9 gap-2 px-5 w-full lg:w-auto"
-                                        onClick={() => navigate(`/students/${id}/skill-analysis`, { state: { student } })}
-                                    >
-                                        <TrendingUp className="w-4 h-4" />
-                                        View LeetCode Analysis
-                                    </Button>
+
                                 </div>
                             </div>
                         </CardContent>
@@ -259,7 +251,18 @@ export default function StudentDetail() {
                             <CardHeader className="pb-2 border-b border-orange-50">
                                 <CardTitle className="flex items-center gap-3 text-lg text-slate-800">
                                     <div className="p-1.5 bg-orange-100 rounded-lg text-orange-600"><Code2 className="w-4 h-4" /></div>
-                                    LeetCode Analysis
+                                    <div className="flex items-center gap-2">
+                                        LeetCode Analysis
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-white hover:text-white bg-orange-500 hover:bg-orange-600 text-[10px] h-6 px-2 rounded-full ml-2"
+                                            onClick={() => navigate(`/students/${id}/skill-analysis`, { state: { student } })}
+                                        >
+                                            <TrendingUp className="w-3 h-3 mr-1" />
+                                            View Detailed Analysis
+                                        </Button>
+                                    </div>
                                     {student.leetcodeStats.activeBadge && student.leetcodeStats.activeBadge.icon && (
                                         <div className="ml-auto flex items-center gap-2 px-2 py-1 bg-orange-50 rounded-full border border-orange-100 max-w-[150px] overflow-hidden">
                                             <div className="w-5 h-5 flex-shrink-0">
