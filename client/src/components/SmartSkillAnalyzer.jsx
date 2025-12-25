@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom'; // Added useNavigate & restored useParams
+import { useNavigate, useParams, useLocation } from 'react-router-dom'; // Added useLocation
 import { skillAnalysisService } from '../services/skillAnalysisService';
 import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import { TrendingUp, Target, Award, BookOpen, Lightbulb, RefreshCw, Sparkles, ArrowLeft } from 'lucide-react'; // Added ArrowLeft
@@ -14,7 +14,8 @@ const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50', '#8dd1e1', '#a4de6c'
 
 const SmartSkillAnalyzer = () => {
   const { id: studentId } = useParams();
-  const navigate = useNavigate(); // Added navigate
+  const navigate = useNavigate();
+  const location = useLocation(); // Added location hook for state access
   const [analysisData, setAnalysisData] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -195,63 +196,54 @@ const SmartSkillAnalyzer = () => {
             initial="hidden"
             animate="visible"
         >
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <Target className="w-8 h-8" />
-              <h1 className="text-3xl font-bold">Smart Skill Analysis</h1>
+      {/* Header & Overall Score Stacked */}
+      <div className="space-y-4">
+          {/* Header Section (Blue/Purple Gradient) */}
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <Target className="w-8 h-8" />
+                <h1 className="text-3xl font-bold">Smart Skill Analysis</h1>
+              </div>
+              <p className="text-blue-100 opacity-90 max-w-md">AI-powered insights to identify knowledge gaps and accelerate learning.</p>
             </div>
-            <p className="text-blue-100">AI-powered insights to identify knowledge gaps and accelerate learning</p>
+            
+            <button
+                onClick={handleRefresh}
+                className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg flex items-center gap-2 transition-colors text-sm font-medium backdrop-blur-sm"
+            >
+                <RefreshCw className="w-4 h-4" />
+                Refresh
+            </button>
           </div>
-          <button
-            onClick={handleRefresh}
-            className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg flex items-center gap-2 transition-colors"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Refresh
-          </button>
-        </div>
-      </div>
 
-      {/* Overall Score Card */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-700 mb-2">Overall Proficiency Score</h2>
-            <div className="flex items-baseline gap-2">
-              <span className="text-5xl font-bold text-blue-600">{analysisData.overallScore}</span>
-              <span className="text-2xl text-gray-400">/100</span>
-            </div>
+          {/* Overall Score Section (White) */}
+          <div className="bg-white rounded-lg shadow-md p-6 relative overflow-hidden">
+             <div className="absolute -top-4 -right-4 p-4 opacity-5">
+                 <Award className="w-48 h-48 text-blue-600" />
+             </div>
+             <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                <div>
+                    <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
+                        {location.state?.student?.name ? `${location.state.student.name.split(' ')[0]}'s` : 'Overall'} Proficiency Score
+                    </h2>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-6xl font-black text-blue-600 tracking-tight">{analysisData.overallScore}</span>
+                        <span className="text-2xl text-gray-400 font-medium">/100</span>
+                    </div>
+                </div>
+             
+                <div className={`flex items-center gap-3 px-6 py-3 rounded-xl border ${getProficiencyLevel(analysisData.overallScore).bg.replace('bg-', 'border-').replace('100', '200')} ${getProficiencyLevel(analysisData.overallScore).bg}`}>
+                    <Award className={`w-8 h-8 ${getProficiencyLevel(analysisData.overallScore).color}`} />
+                    <div className="flex flex-col">
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Proficiency Level</span>
+                        <span className={`text-xl font-bold ${getProficiencyLevel(analysisData.overallScore).color}`}>
+                            {getProficiencyLevel(analysisData.overallScore).label}
+                        </span>
+                    </div>
+                </div>
+             </div>
           </div>
-          <div className="text-right">
-            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${getProficiencyLevel(analysisData.overallScore).bg}`}>
-              <Award className={`w-5 h-5 ${getProficiencyLevel(analysisData.overallScore).color}`} />
-              <span className={`font-semibold ${getProficiencyLevel(analysisData.overallScore).color}`}>
-                {getProficiencyLevel(analysisData.overallScore).label}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* AI Analysis Section */}
-      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 rounded-lg shadow-sm p-6 mb-8 mt-6">
-        <h2 className="text-lg font-semibold text-purple-800 mb-3 flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-purple-600" />
-          AI Skill Assessment
-        </h2>
-        {aiLoading && !analysisData.aiAnalysis ? (
-          <div className="flex items-center gap-2 text-purple-600 animate-pulse">
-            <RefreshCw className="w-4 h-4 animate-spin" />
-            <span>Generating personalized insights...</span>
-          </div>
-        ) : (
-          <p className="text-gray-700 leading-relaxed font-medium">
-            {analysisData.aiAnalysis || "AI analysis unavailable."}
-          </p>
-        )}
       </div>
 
       {/* Graphs Grid: Bar Chart (2) + Radar Chart (1) */}
@@ -380,51 +372,69 @@ const SmartSkillAnalyzer = () => {
            <p className="text-gray-500 italic text-center py-8">No specific recommendations yet.</p>
         )}
       </div>
+      
+      {/* AI Analysis Section (Moved Down for flow) */}
+       <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 rounded-lg shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-purple-800 mb-3 flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-purple-600" />
+          AI Skill Assessment
+        </h2>
+        {aiLoading && !analysisData.aiAnalysis ? (
+          <div className="flex items-center gap-2 text-purple-600 animate-pulse">
+            <RefreshCw className="w-4 h-4 animate-spin" />
+            <span>Generating personalized insights...</span>
+          </div>
+        ) : (
+          <p className="text-gray-700 leading-relaxed font-medium">
+            {analysisData.aiAnalysis || "AI analysis unavailable."}
+          </p>
+        )}
+      </div>
 
-      {/* Topic Details Table */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-4">Detailed Topic Breakdown</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Topic</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">Solved</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">Proficiency</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">Level</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {analysisData.topicBreakdown.map((topic, idx) => {
-                const level = getProficiencyLevel(topic.proficiency);
-                return (
-                  <tr key={idx} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-medium text-gray-800">{topic.topic}</td>
-                    <td className="px-4 py-3 text-sm text-center text-gray-600">
-                      {topic.solved}/{topic.total}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="w-24 bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-blue-600 h-2 rounded-full"
-                            style={{ width: `${topic.proficiency}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-gray-700 font-medium">{topic.proficiency}%</span>
+      {/* Detailed Topic Breakdown (Grid) */}
+      <h2 className="text-xl font-bold text-gray-800 px-1">Detailed Topic Analysis</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {analysisData.topicBreakdown.map((topic, idx) => {
+          const level = getProficiencyLevel(topic.proficiency);
+          return (
+            <div key={idx} className="bg-white rounded-lg shadow-sm p-5 border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+               {/* Progress background bar */}
+               <div className="absolute bottom-0 left-0 h-1 bg-gray-100 w-full">
+                   <div 
+                        className={`h-full ${level.bg.replace('bg-', 'bg-').replace('100', '500')}`} 
+                        style={{ width: `${topic.proficiency}%` }}
+                   ></div>
+               </div>
+
+              <div className="flex justify-between items-start mb-3">
+                  <h3 className="font-bold text-gray-800 text-lg">{topic.topic}</h3>
+                  <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-bold ${level.bg} ${level.color}`}>
+                    {level.label}
+                  </span>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 my-4">
+                  <div>
+                      <div className="text-xs text-gray-400 uppercase font-bold tracking-wider">Proficiency</div>
+                      <div className={`text-2xl font-black ${level.color}`}>{topic.proficiency}%</div>
+                  </div>
+                  <div className="text-right">
+                      <div className="text-xs text-gray-400 uppercase font-bold tracking-wider">Solved</div>
+                      <div className="text-2xl font-bold text-gray-700">
+                        {topic.solved} <span className="text-sm text-gray-400 font-medium">/ {topic.total}</span>
                       </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-center">
-                      <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${level.bg} ${level.color}`}>
-                        {level.label}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+              </div>
+              
+               <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
+                    <div
+                    className={`h-1.5 rounded-full transition-all duration-1000 ${level.bg.replace('bg-', 'bg-').replace('100', '500')}`}
+                    style={{ width: `${topic.proficiency}%` }}
+                    ></div>
+                </div>
+            </div>
+          );
+        })}
       </div>
     </motion.div>
   </div>

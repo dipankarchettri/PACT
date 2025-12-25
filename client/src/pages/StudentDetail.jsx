@@ -4,7 +4,7 @@ import { studentAPI } from '../lib/apiClient';
 import { Button } from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import { Chart } from "react-google-charts";
-import { Github, Code2, Linkedin, ArrowLeft, RefreshCw, Mail, Phone, Edit } from 'lucide-react';
+import { Github, Code2, Linkedin, ArrowLeft, RefreshCw, Mail, Phone, Edit, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import ActivityGraph from '../components/ActivityGraph';
@@ -153,9 +153,20 @@ export default function StudentDetail() {
                                         </div>
                                         
                                         <div>
-                                            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">
-                                                {student.name}
-                                            </h1>
+                                            <div className="flex items-center gap-3">
+                                                <h1 className="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">
+                                                    {student.name}
+                                                </h1>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="text-slate-400 hover:text-indigo-600 text-xs gap-1.5 h-7 px-2 rounded-full border border-transparent hover:border-slate-200"
+                                                    onClick={() => navigate('/update-profile', { state: { student } })}
+                                                >
+                                                    <Edit className="w-3.5 h-3.5" />
+                                                    Edit
+                                                </Button>
+                                            </div>
                                             <div className="flex flex-wrap gap-2 justify-center lg:justify-start mt-1">
                                                 <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-bold tracking-wide">{student.usn}</span>
                                                 <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs border border-slate-200 text-slate-600 font-bold tracking-wide">{student.section}</span>
@@ -223,13 +234,13 @@ export default function StudentDetail() {
                                     </div>
                                     
                                     <Button
-                                        variant="ghost"
+                                        variant="outline"
                                         size="sm"
-                                        className="text-slate-400 hover:text-indigo-600 text-xs gap-1.5 h-8"
-                                        onClick={() => navigate('/update-profile', { state: { student } })}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium border-none shadow-sm h-9 gap-2 px-5 w-full lg:w-auto"
+                                        onClick={() => navigate(`/students/${id}/skill-analysis`, { state: { student } })}
                                     >
-                                        <Edit className="w-3.5 h-3.5" />
-                                        Edit Profile
+                                        <TrendingUp className="w-4 h-4" />
+                                        View LeetCode Analysis
                                     </Button>
                                 </div>
                             </div>
@@ -458,16 +469,7 @@ export default function StudentDetail() {
                             {refreshing ? 'Refreshing Data...' : 'Refresh Student Data'}
                         </Button>
                         
-                        {/* ✨ SKILL ANALYSIS BUTTON AT BOTTOM */}
-                        <Link to={`/students/${id}/skill-analysis`}>
-                            <Button 
-                                variant="outline" 
-                                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-none hover:from-blue-600 hover:to-purple-700 transition-all rounded-full shadow-md"
-                            >
-                                <span className="mr-2">📊</span>
-                                View Skill Analysis
-                            </Button>
-                        </Link>
+
                     </div>
                     <div className="text-slate-400 text-sm">
                         Last updated: {new Date(student.lastUpdated).toLocaleString()}
